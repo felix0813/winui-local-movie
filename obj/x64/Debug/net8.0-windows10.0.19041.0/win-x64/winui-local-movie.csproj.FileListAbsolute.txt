@@ -270,3 +270,8 @@ G:\winui-local-movie\winui-local-movie\obj\x64\Debug\net8.0-windows10.0.19041.0\
 G:\winui-local-movie\winui-local-movie\obj\x64\Debug\net8.0-windows10.0.19041.0\win-x64\HomePage.g.cs
 G:\winui-local-movie\winui-local-movie\obj\x64\Debug\net8.0-windows10.0.19041.0\win-x64\HomePage.xaml
 G:\winui-local-movie\winui-local-movie\obj\x64\Debug\net8.0-windows10.0.19041.0\win-x64\HomePage.xbf
+G:\winui-local-movie\winui-local-movie\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\Microsoft.Data.Sqlite.dll
+G:\winui-local-movie\winui-local-movie\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\SQLitePCLRaw.core.dll
+G:\winui-local-movie\winui-local-movie\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\SQLitePCLRaw.batteries_v2.dll
+G:\winui-local-movie\winui-local-movie\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\SQLitePCLRaw.provider.e_sqlite3.dll
+G:\winui-local-movie\winui-local-movie\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\e_sqlite3.dll

@@ -1,17 +1,51 @@
-﻿<UserControl
+﻿<!-- HomePage.xaml -->
+<UserControl
     x:Class="winui_local_movie.HomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:winui_local_movie">
     
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock Text="欢迎使用本地电影播放器" 
-                   FontSize="24" 
-                   Margin="0,0,0,20" 
-                   HorizontalAlignment="Center"/>
-        <TextBlock Text="点击上方按钮浏览您的电影收藏" 
-                   FontSize="16" 
-                   Foreground="Gray"
-                   HorizontalAlignment="Center"/>
-    </StackPanel>
+    <ScrollViewer>
+        <StackPanel Margin="16">
+            <TextBlock Text="欢迎使用本地电影播放器" 
+                       FontSize="24" 
+                       Margin="0,0,0,20" 
+                       HorizontalAlignment="Left"/>
+            
+            <TextBlock Text="推荐视频" 
+                       FontSize="18" 
+                       Margin="0,0,0,12" 
+                       FontWeight="SemiBold"/>
+            
+            <ItemsRepeater x:ConnectionId='2' x:Name="FeaturedVideosRepeater">
+    <ItemsRepeater.Layout>
+        <UniformGridLayout Orientation="Horizontal" 
+                           MinItemWidth="200" 
+                           MinItemHeight="150" 
+                           MinRowSpacing="12" 
+                           MinColumnSpacing="12"/>
+    </ItemsRepeater.Layout>
+    <DataTemplate                              >
+        <Button x:ConnectionId='4' Background="Transparent" Padding="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel Orientation="Vertical">
+                <Border Background="{ThemeResource SystemChromeLowColor}" 
+                        Height="100" 
+                        CornerRadius="4">
+                    <FontIcon Glyph="&#xE8B2;" 
+                              FontSize="32" 
+                              HorizontalAlignment="Center" 
+                              VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock x:ConnectionId='5'                       
+                           Margin="0,8,0,0" 
+                           TextWrapping="Wrap" 
+                           MaxLines="2"
+                           TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+        </Button>
+    </DataTemplate>
+</ItemsRepeater>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>
 
