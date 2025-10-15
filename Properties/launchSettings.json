@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "winui-local-movie (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "winui-local-movie (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

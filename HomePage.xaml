@@ -1,0 +1,16 @@
+<UserControl
+    x:Class="winui_local_movie.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock Text="欢迎使用本地电影播放器" 
+                   FontSize="24" 
+                   Margin="0,0,0,20" 
+                   HorizontalAlignment="Center"/>
+        <TextBlock Text="点击上方按钮浏览您的电影收藏" 
+                   FontSize="16" 
+                   Foreground="Gray"
+                   HorizontalAlignment="Center"/>
+    </StackPanel>
+</UserControl>
