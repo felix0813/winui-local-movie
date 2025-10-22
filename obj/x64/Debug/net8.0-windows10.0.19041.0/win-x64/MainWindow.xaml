@@ -1,28 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Window
-    x:Class="winui_local_movie.MainWindow"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Title="winui_local_movie">
+  x:Class="winui_local_movie.MainWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d"
+  Title="winui_local_movie">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
 
-        <!-- 顶部按钮栏 -->
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="8" Spacing="8">
-            <Button x:ConnectionId='3' Content="首页"                     />
-            <Button x:ConnectionId='4' Content="稍后播放"                        />
-            <Button x:ConnectionId='5' Content="喜欢"                        />
-        </StackPanel>
-
-        <!-- 主内容区 -->
-        <Frame x:ConnectionId='2' x:Name="ContentFrame" Grid.Row="1" Margin="8"/>
+    <!-- 顶部按钮栏 -->
+    <Grid Grid.Row="0"
+        Margin="8">
+      <StackPanel Orientation="Horizontal"
+          HorizontalAlignment="Left"
+          Spacing="8">
+        <Button x:ConnectionId='4' Content="首页"
+                                />
+        <Button x:ConnectionId='5' Content="所有视频"
+                                           />
+        <Button x:ConnectionId='6' Content="稍后播放"
+                                   />
+        <Button x:ConnectionId='7' Content="喜欢"
+                                   />
+      </StackPanel>
+      <Button x:ConnectionId='3' Content="设置"
+                                
+          HorizontalAlignment="Right"/>
     </Grid>
+
+    <!-- 主内容区 -->
+    <Frame x:ConnectionId='2' x:Name="ContentFrame"
+        Grid.Row="1"
+        Margin="8"/>
+  </Grid>
 </Window>
 

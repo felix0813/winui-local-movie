@@ -8,29 +8,29 @@ using System.Threading.Tasks;
 
 namespace winui_local_movie
 {
-    public class DatabaseService
+  public class DatabaseService
+  {
+    private readonly string _connectionString;
+
+    public DatabaseService()
     {
-        private readonly string _connectionString;
-        
-        public DatabaseService()
-        {
-            var localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var dbPath = Path.Combine(localFolder, "winui_local_movie", "videos.db");
-            
-            // 确保目录存在
-            Directory.CreateDirectory(Path.GetDirectoryName(dbPath));
-            
-            _connectionString = $"Data Source={dbPath}";
-            InitializeDatabase();
-        }
-        
-        private void InitializeDatabase()
-        {
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-            
-            var command = connection.CreateCommand();
-            command.CommandText = @"
+      var localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+      var dbPath = Path.Combine(localFolder, "winui_local_movie", "videos.db");
+
+      // 确保目录存在
+      Directory.CreateDirectory(Path.GetDirectoryName(dbPath));
+
+      _connectionString = $"Data Source={dbPath}";
+      InitializeDatabase();
+    }
+
+    private void InitializeDatabase()
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      connection.Open();
+
+      var command = connection.CreateCommand();
+      command.CommandText = @"
                 CREATE TABLE IF NOT EXISTS Videos (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Title TEXT NOT NULL,
@@ -41,129 +41,212 @@ namespace winui_local_movie
                     IsFavorite INTEGER DEFAULT 0,
                     IsWatchLater INTEGER DEFAULT 0
                 )";
-            command.ExecuteNonQuery();
-        }
-        
-        public async Task AddVideoAsync(VideoModel video)
-        {
-            using var connection = new SqliteConnection(_connectionString);
-            await connection.OpenAsync();
-            
-            var command = connection.CreateCommand();
-            command.CommandText = @"
+      command.ExecuteNonQuery();
+    }
+
+    public async Task AddVideoAsync(VideoModel video)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = @"
                 INSERT OR REPLACE INTO Videos 
                 (Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater)
                 VALUES (@Title, @FilePath, @ThumbnailPath, @Duration, @DateAdded, @IsFavorite, @IsWatchLater)";
-                
-            command.Parameters.AddWithValue("@Title", video.Title);
-            command.Parameters.AddWithValue("@FilePath", video.FilePath);
-            command.Parameters.AddWithValue("@ThumbnailPath", video.ThumbnailPath ?? "");
-            command.Parameters.AddWithValue("@Duration", video.Duration.ToString());
-            command.Parameters.AddWithValue("@DateAdded", video.DateAdded.ToString("o"));
-            command.Parameters.AddWithValue("@IsFavorite", video.IsFavorite ? 1 : 0);
-            command.Parameters.AddWithValue("@IsWatchLater", video.IsWatchLater ? 1 : 0);
-            
-            await command.ExecuteNonQueryAsync();
-        }
-        
-        public async Task<List<VideoModel>> GetFeaturedVideosAsync(int count = 6)
-        {
-            var videos = new List<VideoModel>();
-            
-            using var connection = new SqliteConnection(_connectionString);
-            await connection.OpenAsync();
-            
-            var command = connection.CreateCommand();
-            command.CommandText = @"
+
+      command.Parameters.AddWithValue("@Title", video.Title);
+      command.Parameters.AddWithValue("@FilePath", video.FilePath);
+      command.Parameters.AddWithValue("@ThumbnailPath", video.ThumbnailPath ?? "");
+      command.Parameters.AddWithValue("@Duration", video.Duration.ToString());
+      command.Parameters.AddWithValue("@DateAdded", video.DateAdded.ToString("o"));
+      command.Parameters.AddWithValue("@IsFavorite", video.IsFavorite ? 1 : 0);
+      command.Parameters.AddWithValue("@IsWatchLater", video.IsWatchLater ? 1 : 0);
+
+      await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task<List<VideoModel>> GetFeaturedVideosAsync(int count = 6)
+    {
+      var videos = new List<VideoModel>();
+
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = @"
                 SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater
                 FROM Videos 
                 ORDER BY DateAdded DESC 
                 LIMIT @Count";
-            command.Parameters.AddWithValue("@Count", count);
-            
-            using var reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                videos.Add(new VideoModel
-                {
-                    Id = reader.GetInt32("Id"),
-                    Title = reader.GetString("Title"),
-                    FilePath = reader.GetString("FilePath"),
-                    ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
-                    Duration = TimeSpan.Parse(reader.GetString("Duration")),
-                    DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
-                    IsFavorite = reader.GetInt32("IsFavorite") == 1,
-                    IsWatchLater = reader.GetInt32("IsWatchLater") == 1
-                });
-            }
-            
-            return videos;
-        }
-        
-        public async Task<List<VideoModel>> GetWatchLaterVideosAsync()
+      command.Parameters.AddWithValue("@Count", count);
+
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync())
+      {
+        videos.Add(new VideoModel
         {
-            var videos = new List<VideoModel>();
-            
-            using var connection = new SqliteConnection(_connectionString);
-            await connection.OpenAsync();
-            
-            var command = connection.CreateCommand();
-            command.CommandText = @"
+          Id = reader.GetInt32("Id"),
+          Title = reader.GetString("Title"),
+          FilePath = reader.GetString("FilePath"),
+          ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
+          Duration = TimeSpan.Parse(reader.GetString("Duration")),
+          DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
+          IsFavorite = reader.GetInt32("IsFavorite") == 1,
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1
+        });
+      }
+
+      return videos;
+    }
+
+    public async Task<List<VideoModel>> GetWatchLaterVideosAsync()
+    {
+      var videos = new List<VideoModel>();
+
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = @"
                 SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater
                 FROM Videos 
                 WHERE IsWatchLater = 1
                 ORDER BY DateAdded DESC";
-            
-            using var reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                videos.Add(new VideoModel
-                {
-                    Id = reader.GetInt32("Id"),
-                    Title = reader.GetString("Title"),
-                    FilePath = reader.GetString("FilePath"),
-                    ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
-                    Duration = TimeSpan.Parse(reader.GetString("Duration")),
-                    DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
-                    IsFavorite = reader.GetInt32("IsFavorite") == 1,
-                    IsWatchLater = reader.GetInt32("IsWatchLater") == 1
-                });
-            }
-            
-            return videos;
-        }
-        
-        public async Task<List<VideoModel>> GetFavoriteVideosAsync()
+
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync())
+      {
+        videos.Add(new VideoModel
         {
-            var videos = new List<VideoModel>();
-            
-            using var connection = new SqliteConnection(_connectionString);
-            await connection.OpenAsync();
-            
-            var command = connection.CreateCommand();
-            command.CommandText = @"
+          Id = reader.GetInt32("Id"),
+          Title = reader.GetString("Title"),
+          FilePath = reader.GetString("FilePath"),
+          ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
+          Duration = TimeSpan.Parse(reader.GetString("Duration")),
+          DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
+          IsFavorite = reader.GetInt32("IsFavorite") == 1,
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1
+        });
+      }
+
+      return videos;
+    }
+
+    public async Task<List<VideoModel>> GetFavoriteVideosAsync()
+    {
+      var videos = new List<VideoModel>();
+
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = @"
                 SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater
                 FROM Videos 
                 WHERE IsFavorite = 1
                 ORDER BY DateAdded DESC";
-            
-            using var reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                videos.Add(new VideoModel
-                {
-                    Id = reader.GetInt32("Id"),
-                    Title = reader.GetString("Title"),
-                    FilePath = reader.GetString("FilePath"),
-                    ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
-                    Duration = TimeSpan.Parse(reader.GetString("Duration")),
-                    DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
-                    IsFavorite = reader.GetInt32("IsFavorite") == 1,
-                    IsWatchLater = reader.GetInt32("IsWatchLater") == 1
-                });
-            }
-            
-            return videos;
-        }
+
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync())
+      {
+        videos.Add(new VideoModel
+        {
+          Id = reader.GetInt32("Id"),
+          Title = reader.GetString("Title"),
+          FilePath = reader.GetString("FilePath"),
+          ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
+          Duration = TimeSpan.Parse(reader.GetString("Duration")),
+          DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
+          IsFavorite = reader.GetInt32("IsFavorite") == 1,
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1
+        });
+      }
+
+      return videos;
     }
+    public async Task<int> GetTotalVideosCountAsync()
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = "SELECT COUNT(*) FROM Videos";
+
+      var result = await command.ExecuteScalarAsync();
+      return Convert.ToInt32(result);
+    }
+
+    public async Task<List<VideoModel>> GetVideosAsync(int offset, int limit)
+    {
+      var videos = new List<VideoModel>();
+
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = @"
+        SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater
+        FROM Videos 
+        ORDER BY DateAdded DESC 
+        LIMIT @Limit OFFSET @Offset";
+      command.Parameters.AddWithValue("@Limit", limit);
+      command.Parameters.AddWithValue("@Offset", offset);
+
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync())
+      {
+        videos.Add(new VideoModel
+        {
+          Id = reader.GetInt32("Id"),
+          Title = reader.GetString("Title"),
+          FilePath = reader.GetString("FilePath"),
+          ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
+          Duration = TimeSpan.Parse(reader.GetString("Duration")),
+          DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
+          IsFavorite = reader.GetInt32("IsFavorite") == 1,
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1
+        });
+      }
+
+      return videos;
+    }
+    public async Task UpdateVideoFavoriteStatusAsync(int videoId, bool isFavorite)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = "UPDATE Videos SET IsFavorite = @IsFavorite WHERE Id = @Id";
+      command.Parameters.AddWithValue("@IsFavorite", isFavorite ? 1 : 0);
+      command.Parameters.AddWithValue("@Id", videoId);
+
+      await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task UpdateVideoWatchLaterStatusAsync(int videoId, bool isWatchLater)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = "UPDATE Videos SET IsWatchLater = @IsWatchLater WHERE Id = @Id";
+      command.Parameters.AddWithValue("@IsWatchLater", isWatchLater ? 1 : 0);
+      command.Parameters.AddWithValue("@Id", videoId);
+
+      await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task DeleteVideoAsync(int videoId)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = "DELETE FROM Videos WHERE Id = @Id";
+      command.Parameters.AddWithValue("@Id", videoId);
+
+      await command.ExecuteNonQueryAsync();
+    }
+  }
 }

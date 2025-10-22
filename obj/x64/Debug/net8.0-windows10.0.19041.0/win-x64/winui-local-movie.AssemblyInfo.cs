@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("winui-local-movie")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+86fc6e1b02d3138600bacfe6a58b3d54808c0a7a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+003cea4b48dbf27a35ce49757a53949ba98f0bbf")]
 [assembly: System.Reflection.AssemblyProductAttribute("winui-local-movie")]
 [assembly: System.Reflection.AssemblyTitleAttribute("winui-local-movie")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

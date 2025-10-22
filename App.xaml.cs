@@ -22,31 +22,25 @@ using SQLitePCL;
 
 namespace winui_local_movie
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
-    public partial class App : Application
+  /// <summary>
+  /// Provides application-specific behavior to supplement the default Application class.
+  /// </summary>
+  public partial class App : Application
+  {
+    public DatabaseService DatabaseService { get; private set; }
+
+    public App()
     {
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
-        public App()
-        {
-            this.InitializeComponent();
-            Batteries.Init();
-        }
-
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
-        {
-            m_window = new MainWindow();
-            m_window.Activate();
-        }
-
-        private Window? m_window;
+      this.InitializeComponent();
+      DatabaseService = new DatabaseService();
     }
+
+    protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+    {
+      MainWindow = new MainWindow();
+      MainWindow.Activate();
+    }
+
+    public Window MainWindow { get; private set; } // 添加这行
+  }
 }

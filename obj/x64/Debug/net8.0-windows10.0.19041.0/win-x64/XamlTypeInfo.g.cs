@@ -226,75 +226,87 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
         
         private void InitTypeTables()
         {
-            _typeNameTable = new string[33];
+            _typeNameTable = new string[39];
             _typeNameTable[0] = "Microsoft.UI.Xaml.Controls.XamlControlsResources";
             _typeNameTable[1] = "Microsoft.UI.Xaml.ResourceDictionary";
             _typeNameTable[2] = "Object";
             _typeNameTable[3] = "Boolean";
-            _typeNameTable[4] = "Microsoft.UI.Xaml.Controls.ItemsRepeater";
-            _typeNameTable[5] = "Microsoft.UI.Xaml.FrameworkElement";
-            _typeNameTable[6] = "Microsoft.UI.Xaml.Controls.Layout";
-            _typeNameTable[7] = "Microsoft.UI.Xaml.DependencyObject";
-            _typeNameTable[8] = "Microsoft.UI.Xaml.Media.Brush";
-            _typeNameTable[9] = "Double";
-            _typeNameTable[10] = "Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider";
-            _typeNameTable[11] = "Microsoft.UI.Xaml.Controls.ItemsSourceView";
-            _typeNameTable[12] = "Microsoft.UI.Xaml.Controls.UniformGridLayout";
-            _typeNameTable[13] = "Microsoft.UI.Xaml.Controls.VirtualizingLayout";
-            _typeNameTable[14] = "Microsoft.UI.Xaml.Controls.Orientation";
-            _typeNameTable[15] = "Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification";
-            _typeNameTable[16] = "System.Enum";
-            _typeNameTable[17] = "System.ValueType";
-            _typeNameTable[18] = "Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch";
-            _typeNameTable[19] = "Int32";
-            _typeNameTable[20] = "Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation";
-            _typeNameTable[21] = "winui_local_movie.HomePage";
-            _typeNameTable[22] = "Microsoft.UI.Xaml.Controls.UserControl";
-            _typeNameTable[23] = "System.Collections.ObjectModel.ObservableCollection`1<winui_local_movie.VideoModel>";
-            _typeNameTable[24] = "System.Collections.ObjectModel.Collection`1<winui_local_movie.VideoModel>";
-            _typeNameTable[25] = "winui_local_movie.VideoModel";
-            _typeNameTable[26] = "String";
-            _typeNameTable[27] = "TimeSpan";
-            _typeNameTable[28] = "System.DateTime";
-            _typeNameTable[29] = "winui_local_movie.MainWindow";
-            _typeNameTable[30] = "Microsoft.UI.Xaml.Window";
-            _typeNameTable[31] = "Microsoft.UI.Xaml.Controls.TreeViewNode";
-            _typeNameTable[32] = "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>";
+            _typeNameTable[4] = "winui_local_movie.AllVideosPage";
+            _typeNameTable[5] = "Microsoft.UI.Xaml.Controls.Page";
+            _typeNameTable[6] = "Microsoft.UI.Xaml.Controls.UserControl";
+            _typeNameTable[7] = "Microsoft.UI.Xaml.Controls.ItemsRepeater";
+            _typeNameTable[8] = "Microsoft.UI.Xaml.FrameworkElement";
+            _typeNameTable[9] = "Microsoft.UI.Xaml.Controls.Layout";
+            _typeNameTable[10] = "Microsoft.UI.Xaml.DependencyObject";
+            _typeNameTable[11] = "Microsoft.UI.Xaml.Media.Brush";
+            _typeNameTable[12] = "Double";
+            _typeNameTable[13] = "Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider";
+            _typeNameTable[14] = "Microsoft.UI.Xaml.Controls.ItemsSourceView";
+            _typeNameTable[15] = "Microsoft.UI.Xaml.Controls.UniformGridLayout";
+            _typeNameTable[16] = "Microsoft.UI.Xaml.Controls.VirtualizingLayout";
+            _typeNameTable[17] = "Microsoft.UI.Xaml.Controls.Orientation";
+            _typeNameTable[18] = "Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification";
+            _typeNameTable[19] = "System.Enum";
+            _typeNameTable[20] = "System.ValueType";
+            _typeNameTable[21] = "Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch";
+            _typeNameTable[22] = "Int32";
+            _typeNameTable[23] = "Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation";
+            _typeNameTable[24] = "winui_local_movie.HomePage";
+            _typeNameTable[25] = "System.Collections.ObjectModel.ObservableCollection`1<winui_local_movie.VideoModel>";
+            _typeNameTable[26] = "System.Collections.ObjectModel.Collection`1<winui_local_movie.VideoModel>";
+            _typeNameTable[27] = "winui_local_movie.VideoModel";
+            _typeNameTable[28] = "String";
+            _typeNameTable[29] = "TimeSpan";
+            _typeNameTable[30] = "System.DateTime";
+            _typeNameTable[31] = "winui_local_movie.MainWindow";
+            _typeNameTable[32] = "Microsoft.UI.Xaml.Window";
+            _typeNameTable[33] = "Microsoft.UI.Xaml.Controls.ProgressBar";
+            _typeNameTable[34] = "Microsoft.UI.Xaml.Controls.Primitives.RangeBase";
+            _typeNameTable[35] = "Microsoft.UI.Xaml.Controls.ProgressBarTemplateSettings";
+            _typeNameTable[36] = "winui_local_movie.SettingsPage";
+            _typeNameTable[37] = "Microsoft.UI.Xaml.Controls.TreeViewNode";
+            _typeNameTable[38] = "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>";
 
-            _typeTable = new global::System.Type[33];
+            _typeTable = new global::System.Type[39];
             _typeTable[0] = typeof(global::Microsoft.UI.Xaml.Controls.XamlControlsResources);
             _typeTable[1] = typeof(global::Microsoft.UI.Xaml.ResourceDictionary);
             _typeTable[2] = typeof(global::System.Object);
             _typeTable[3] = typeof(global::System.Boolean);
-            _typeTable[4] = typeof(global::Microsoft.UI.Xaml.Controls.ItemsRepeater);
-            _typeTable[5] = typeof(global::Microsoft.UI.Xaml.FrameworkElement);
-            _typeTable[6] = typeof(global::Microsoft.UI.Xaml.Controls.Layout);
-            _typeTable[7] = typeof(global::Microsoft.UI.Xaml.DependencyObject);
-            _typeTable[8] = typeof(global::Microsoft.UI.Xaml.Media.Brush);
-            _typeTable[9] = typeof(global::System.Double);
-            _typeTable[10] = typeof(global::Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider);
-            _typeTable[11] = typeof(global::Microsoft.UI.Xaml.Controls.ItemsSourceView);
-            _typeTable[12] = typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayout);
-            _typeTable[13] = typeof(global::Microsoft.UI.Xaml.Controls.VirtualizingLayout);
-            _typeTable[14] = typeof(global::Microsoft.UI.Xaml.Controls.Orientation);
-            _typeTable[15] = typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification);
-            _typeTable[16] = typeof(global::System.Enum);
-            _typeTable[17] = typeof(global::System.ValueType);
-            _typeTable[18] = typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch);
-            _typeTable[19] = typeof(global::System.Int32);
-            _typeTable[20] = typeof(global::Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation);
-            _typeTable[21] = typeof(global::winui_local_movie.HomePage);
-            _typeTable[22] = typeof(global::Microsoft.UI.Xaml.Controls.UserControl);
-            _typeTable[23] = typeof(global::System.Collections.ObjectModel.ObservableCollection<global::winui_local_movie.VideoModel>);
-            _typeTable[24] = typeof(global::System.Collections.ObjectModel.Collection<global::winui_local_movie.VideoModel>);
-            _typeTable[25] = typeof(global::winui_local_movie.VideoModel);
-            _typeTable[26] = typeof(global::System.String);
-            _typeTable[27] = typeof(global::System.TimeSpan);
-            _typeTable[28] = typeof(global::System.DateTime);
-            _typeTable[29] = typeof(global::winui_local_movie.MainWindow);
-            _typeTable[30] = typeof(global::Microsoft.UI.Xaml.Window);
-            _typeTable[31] = typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode);
-            _typeTable[32] = typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>);
+            _typeTable[4] = typeof(global::winui_local_movie.AllVideosPage);
+            _typeTable[5] = typeof(global::Microsoft.UI.Xaml.Controls.Page);
+            _typeTable[6] = typeof(global::Microsoft.UI.Xaml.Controls.UserControl);
+            _typeTable[7] = typeof(global::Microsoft.UI.Xaml.Controls.ItemsRepeater);
+            _typeTable[8] = typeof(global::Microsoft.UI.Xaml.FrameworkElement);
+            _typeTable[9] = typeof(global::Microsoft.UI.Xaml.Controls.Layout);
+            _typeTable[10] = typeof(global::Microsoft.UI.Xaml.DependencyObject);
+            _typeTable[11] = typeof(global::Microsoft.UI.Xaml.Media.Brush);
+            _typeTable[12] = typeof(global::System.Double);
+            _typeTable[13] = typeof(global::Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider);
+            _typeTable[14] = typeof(global::Microsoft.UI.Xaml.Controls.ItemsSourceView);
+            _typeTable[15] = typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayout);
+            _typeTable[16] = typeof(global::Microsoft.UI.Xaml.Controls.VirtualizingLayout);
+            _typeTable[17] = typeof(global::Microsoft.UI.Xaml.Controls.Orientation);
+            _typeTable[18] = typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification);
+            _typeTable[19] = typeof(global::System.Enum);
+            _typeTable[20] = typeof(global::System.ValueType);
+            _typeTable[21] = typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch);
+            _typeTable[22] = typeof(global::System.Int32);
+            _typeTable[23] = typeof(global::Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation);
+            _typeTable[24] = typeof(global::winui_local_movie.HomePage);
+            _typeTable[25] = typeof(global::System.Collections.ObjectModel.ObservableCollection<global::winui_local_movie.VideoModel>);
+            _typeTable[26] = typeof(global::System.Collections.ObjectModel.Collection<global::winui_local_movie.VideoModel>);
+            _typeTable[27] = typeof(global::winui_local_movie.VideoModel);
+            _typeTable[28] = typeof(global::System.String);
+            _typeTable[29] = typeof(global::System.TimeSpan);
+            _typeTable[30] = typeof(global::System.DateTime);
+            _typeTable[31] = typeof(global::winui_local_movie.MainWindow);
+            _typeTable[32] = typeof(global::Microsoft.UI.Xaml.Window);
+            _typeTable[33] = typeof(global::Microsoft.UI.Xaml.Controls.ProgressBar);
+            _typeTable[34] = typeof(global::Microsoft.UI.Xaml.Controls.Primitives.RangeBase);
+            _typeTable[35] = typeof(global::Microsoft.UI.Xaml.Controls.ProgressBarTemplateSettings);
+            _typeTable[36] = typeof(global::winui_local_movie.SettingsPage);
+            _typeTable[37] = typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode);
+            _typeTable[38] = typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>);
         }
 
         private int LookupTypeIndexByName(string typeName)
@@ -330,37 +342,44 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
         }
 
         private object Activate_0_XamlControlsResources() { return new global::Microsoft.UI.Xaml.Controls.XamlControlsResources(); }
-        private object Activate_4_ItemsRepeater() { return new global::Microsoft.UI.Xaml.Controls.ItemsRepeater(); }
-        private object Activate_10_ItemCollectionTransitionProvider() { return new global::Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider(); }
-        private object Activate_12_UniformGridLayout() { return new global::Microsoft.UI.Xaml.Controls.UniformGridLayout(); }
-        private object Activate_13_VirtualizingLayout() { return new global::Microsoft.UI.Xaml.Controls.VirtualizingLayout(); }
-        private object Activate_21_HomePage() { return new global::winui_local_movie.HomePage(); }
-        private object Activate_23_ObservableCollection() { return new global::System.Collections.ObjectModel.ObservableCollection<global::winui_local_movie.VideoModel>(); }
-        private object Activate_24_Collection() { return new global::System.Collections.ObjectModel.Collection<global::winui_local_movie.VideoModel>(); }
-        private object Activate_25_VideoModel() { return new global::winui_local_movie.VideoModel(); }
-        private object Activate_29_MainWindow() { return new global::winui_local_movie.MainWindow(); }
-        private object Activate_31_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
+        private object Activate_4_AllVideosPage() { return new global::winui_local_movie.AllVideosPage(); }
+        private object Activate_7_ItemsRepeater() { return new global::Microsoft.UI.Xaml.Controls.ItemsRepeater(); }
+        private object Activate_13_ItemCollectionTransitionProvider() { return new global::Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider(); }
+        private object Activate_15_UniformGridLayout() { return new global::Microsoft.UI.Xaml.Controls.UniformGridLayout(); }
+        private object Activate_16_VirtualizingLayout() { return new global::Microsoft.UI.Xaml.Controls.VirtualizingLayout(); }
+        private object Activate_24_HomePage() { return new global::winui_local_movie.HomePage(); }
+        private object Activate_25_ObservableCollection() { return new global::System.Collections.ObjectModel.ObservableCollection<global::winui_local_movie.VideoModel>(); }
+        private object Activate_26_Collection() { return new global::System.Collections.ObjectModel.Collection<global::winui_local_movie.VideoModel>(); }
+        private object Activate_27_VideoModel() { return new global::winui_local_movie.VideoModel(); }
+        private object Activate_31_MainWindow() { return new global::winui_local_movie.MainWindow(); }
+        private object Activate_33_ProgressBar() { return new global::Microsoft.UI.Xaml.Controls.ProgressBar(); }
+        private object Activate_36_SettingsPage() { return new global::winui_local_movie.SettingsPage(); }
+        private object Activate_37_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
         private void StaticInitializer_0_XamlControlsResources() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.XamlControlsResources).TypeHandle);
-        private void StaticInitializer_4_ItemsRepeater() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.ItemsRepeater).TypeHandle);
-        private void StaticInitializer_6_Layout() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.Layout).TypeHandle);
-        private void StaticInitializer_10_ItemCollectionTransitionProvider() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider).TypeHandle);
-        private void StaticInitializer_11_ItemsSourceView() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.ItemsSourceView).TypeHandle);
-        private void StaticInitializer_12_UniformGridLayout() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayout).TypeHandle);
-        private void StaticInitializer_13_VirtualizingLayout() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.VirtualizingLayout).TypeHandle);
-        private void StaticInitializer_15_UniformGridLayoutItemsJustification() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification).TypeHandle);
-        private void StaticInitializer_16_Enum() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Enum).TypeHandle);
-        private void StaticInitializer_17_ValueType() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.ValueType).TypeHandle);
-        private void StaticInitializer_18_UniformGridLayoutItemsStretch() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch).TypeHandle);
-        private void StaticInitializer_20_IndexBasedLayoutOrientation() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation).TypeHandle);
-        private void StaticInitializer_21_HomePage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::winui_local_movie.HomePage).TypeHandle);
-        private void StaticInitializer_23_ObservableCollection() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.ObjectModel.ObservableCollection<global::winui_local_movie.VideoModel>).TypeHandle);
-        private void StaticInitializer_24_Collection() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.ObjectModel.Collection<global::winui_local_movie.VideoModel>).TypeHandle);
-        private void StaticInitializer_25_VideoModel() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::winui_local_movie.VideoModel).TypeHandle);
-        private void StaticInitializer_27_TimeSpan() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.TimeSpan).TypeHandle);
-        private void StaticInitializer_28_DateTime() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.DateTime).TypeHandle);
-        private void StaticInitializer_29_MainWindow() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::winui_local_movie.MainWindow).TypeHandle);
-        private void StaticInitializer_31_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_32_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
+        private void StaticInitializer_4_AllVideosPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::winui_local_movie.AllVideosPage).TypeHandle);
+        private void StaticInitializer_7_ItemsRepeater() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.ItemsRepeater).TypeHandle);
+        private void StaticInitializer_9_Layout() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.Layout).TypeHandle);
+        private void StaticInitializer_13_ItemCollectionTransitionProvider() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider).TypeHandle);
+        private void StaticInitializer_14_ItemsSourceView() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.ItemsSourceView).TypeHandle);
+        private void StaticInitializer_15_UniformGridLayout() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayout).TypeHandle);
+        private void StaticInitializer_16_VirtualizingLayout() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.VirtualizingLayout).TypeHandle);
+        private void StaticInitializer_18_UniformGridLayoutItemsJustification() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification).TypeHandle);
+        private void StaticInitializer_19_Enum() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Enum).TypeHandle);
+        private void StaticInitializer_20_ValueType() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.ValueType).TypeHandle);
+        private void StaticInitializer_21_UniformGridLayoutItemsStretch() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch).TypeHandle);
+        private void StaticInitializer_23_IndexBasedLayoutOrientation() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation).TypeHandle);
+        private void StaticInitializer_24_HomePage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::winui_local_movie.HomePage).TypeHandle);
+        private void StaticInitializer_25_ObservableCollection() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.ObjectModel.ObservableCollection<global::winui_local_movie.VideoModel>).TypeHandle);
+        private void StaticInitializer_26_Collection() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.ObjectModel.Collection<global::winui_local_movie.VideoModel>).TypeHandle);
+        private void StaticInitializer_27_VideoModel() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::winui_local_movie.VideoModel).TypeHandle);
+        private void StaticInitializer_29_TimeSpan() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.TimeSpan).TypeHandle);
+        private void StaticInitializer_30_DateTime() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.DateTime).TypeHandle);
+        private void StaticInitializer_31_MainWindow() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::winui_local_movie.MainWindow).TypeHandle);
+        private void StaticInitializer_33_ProgressBar() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.ProgressBar).TypeHandle);
+        private void StaticInitializer_35_ProgressBarTemplateSettings() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.ProgressBarTemplateSettings).TypeHandle);
+        private void StaticInitializer_36_SettingsPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::winui_local_movie.SettingsPage).TypeHandle);
+        private void StaticInitializer_37_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
+        private void StaticInitializer_38_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void MapAdd_0_XamlControlsResources(object instance, object key, object item)
         {
             var collection = (global::System.Collections.Generic.IDictionary<global::System.Object, global::System.Object>)instance;
@@ -368,19 +387,19 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
             var newItem = (global::System.Object)item;
             collection.Add(newKey, newItem);
         }
-        private void VectorAdd_23_ObservableCollection(object instance, object item)
+        private void VectorAdd_25_ObservableCollection(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::winui_local_movie.VideoModel>)instance;
             var newItem = (global::winui_local_movie.VideoModel)item;
             collection.Add(newItem);
         }
-        private void VectorAdd_24_Collection(object instance, object item)
+        private void VectorAdd_26_Collection(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::winui_local_movie.VideoModel>)instance;
             var newItem = (global::winui_local_movie.VideoModel)item;
             collection.Add(newItem);
         }
-        private void VectorAdd_32_IList(object instance, object item)
+        private void VectorAdd_38_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
             var newItem = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)item;
@@ -418,10 +437,26 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
                 xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 4:   //  Microsoft.UI.Xaml.Controls.ItemsRepeater
+            case 4:   //  winui_local_movie.AllVideosPage
+                userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
+                userType.Activator = Activate_4_AllVideosPage;
+                userType.StaticInitializer = StaticInitializer_4_AllVideosPage;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 5:   //  Microsoft.UI.Xaml.Controls.Page
+                xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 6:   //  Microsoft.UI.Xaml.Controls.UserControl
+                xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 7:   //  Microsoft.UI.Xaml.Controls.ItemsRepeater
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.FrameworkElement"));
-                userType.Activator = Activate_4_ItemsRepeater;
-                userType.StaticInitializer = StaticInitializer_4_ItemsRepeater;
+                userType.Activator = Activate_7_ItemsRepeater;
+                userType.StaticInitializer = StaticInitializer_7_ItemsRepeater;
                 userType.SetContentPropertyName("Microsoft.UI.Xaml.Controls.ItemsRepeater.ItemTemplate");
                 userType.AddMemberName("ItemTemplate");
                 userType.AddMemberName("Layout");
@@ -434,47 +469,47 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 5:   //  Microsoft.UI.Xaml.FrameworkElement
+            case 8:   //  Microsoft.UI.Xaml.FrameworkElement
                 xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 6:   //  Microsoft.UI.Xaml.Controls.Layout
+            case 9:   //  Microsoft.UI.Xaml.Controls.Layout
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
-                userType.StaticInitializer = StaticInitializer_6_Layout;
+                userType.StaticInitializer = StaticInitializer_9_Layout;
                 userType.AddMemberName("IndexBasedLayoutOrientation");
                 xamlType = userType;
                 break;
 
-            case 7:   //  Microsoft.UI.Xaml.DependencyObject
+            case 10:   //  Microsoft.UI.Xaml.DependencyObject
                 xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 8:   //  Microsoft.UI.Xaml.Media.Brush
+            case 11:   //  Microsoft.UI.Xaml.Media.Brush
                 xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 9:   //  Double
+            case 12:   //  Double
                 xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 10:   //  Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider
+            case 13:   //  Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.StaticInitializer = StaticInitializer_10_ItemCollectionTransitionProvider;
+                userType.StaticInitializer = StaticInitializer_13_ItemCollectionTransitionProvider;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 11:   //  Microsoft.UI.Xaml.Controls.ItemsSourceView
+            case 14:   //  Microsoft.UI.Xaml.Controls.ItemsSourceView
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.StaticInitializer = StaticInitializer_11_ItemsSourceView;
+                userType.StaticInitializer = StaticInitializer_14_ItemsSourceView;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 12:   //  Microsoft.UI.Xaml.Controls.UniformGridLayout
+            case 15:   //  Microsoft.UI.Xaml.Controls.UniformGridLayout
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.VirtualizingLayout"));
-                userType.Activator = Activate_12_UniformGridLayout;
-                userType.StaticInitializer = StaticInitializer_12_UniformGridLayout;
+                userType.Activator = Activate_15_UniformGridLayout;
+                userType.StaticInitializer = StaticInitializer_15_UniformGridLayout;
                 userType.AddMemberName("Orientation");
                 userType.AddMemberName("MinItemWidth");
                 userType.AddMemberName("MinItemHeight");
@@ -486,20 +521,20 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 13:   //  Microsoft.UI.Xaml.Controls.VirtualizingLayout
+            case 16:   //  Microsoft.UI.Xaml.Controls.VirtualizingLayout
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Layout"));
-                userType.Activator = Activate_13_VirtualizingLayout;
-                userType.StaticInitializer = StaticInitializer_13_VirtualizingLayout;
+                userType.Activator = Activate_16_VirtualizingLayout;
+                userType.StaticInitializer = StaticInitializer_16_VirtualizingLayout;
                 xamlType = userType;
                 break;
 
-            case 14:   //  Microsoft.UI.Xaml.Controls.Orientation
+            case 17:   //  Microsoft.UI.Xaml.Controls.Orientation
                 xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 15:   //  Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification
+            case 18:   //  Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.Enum"));
-                userType.StaticInitializer = StaticInitializer_15_UniformGridLayoutItemsJustification;
+                userType.StaticInitializer = StaticInitializer_18_UniformGridLayoutItemsJustification;
                 userType.AddEnumValue("Start", global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification.Start);
                 userType.AddEnumValue("Center", global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification.Center);
                 userType.AddEnumValue("End", global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification.End);
@@ -509,73 +544,69 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 16:   //  System.Enum
+            case 19:   //  System.Enum
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
-                userType.StaticInitializer = StaticInitializer_16_Enum;
+                userType.StaticInitializer = StaticInitializer_19_Enum;
                 xamlType = userType;
                 break;
 
-            case 17:   //  System.ValueType
+            case 20:   //  System.ValueType
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.StaticInitializer = StaticInitializer_17_ValueType;
+                userType.StaticInitializer = StaticInitializer_20_ValueType;
                 xamlType = userType;
                 break;
 
-            case 18:   //  Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch
+            case 21:   //  Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.Enum"));
-                userType.StaticInitializer = StaticInitializer_18_UniformGridLayoutItemsStretch;
+                userType.StaticInitializer = StaticInitializer_21_UniformGridLayoutItemsStretch;
                 userType.AddEnumValue("None", global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch.None);
                 userType.AddEnumValue("Fill", global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch.Fill);
                 userType.AddEnumValue("Uniform", global::Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch.Uniform);
                 xamlType = userType;
                 break;
 
-            case 19:   //  Int32
+            case 22:   //  Int32
                 xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 20:   //  Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation
+            case 23:   //  Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.Enum"));
-                userType.StaticInitializer = StaticInitializer_20_IndexBasedLayoutOrientation;
+                userType.StaticInitializer = StaticInitializer_23_IndexBasedLayoutOrientation;
                 userType.AddEnumValue("None", global::Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation.None);
                 userType.AddEnumValue("TopToBottom", global::Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation.TopToBottom);
                 userType.AddEnumValue("LeftToRight", global::Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation.LeftToRight);
                 xamlType = userType;
                 break;
 
-            case 21:   //  winui_local_movie.HomePage
+            case 24:   //  winui_local_movie.HomePage
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_21_HomePage;
-                userType.StaticInitializer = StaticInitializer_21_HomePage;
+                userType.Activator = Activate_24_HomePage;
+                userType.StaticInitializer = StaticInitializer_24_HomePage;
                 userType.AddMemberName("FeaturedVideos");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 22:   //  Microsoft.UI.Xaml.Controls.UserControl
-                xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
-                break;
-
-            case 23:   //  System.Collections.ObjectModel.ObservableCollection`1<winui_local_movie.VideoModel>
+            case 25:   //  System.Collections.ObjectModel.ObservableCollection`1<winui_local_movie.VideoModel>
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.Collections.ObjectModel.Collection`1<winui_local_movie.VideoModel>"));
-                userType.StaticInitializer = StaticInitializer_23_ObservableCollection;
-                userType.CollectionAdd = VectorAdd_23_ObservableCollection;
+                userType.StaticInitializer = StaticInitializer_25_ObservableCollection;
+                userType.CollectionAdd = VectorAdd_25_ObservableCollection;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 24:   //  System.Collections.ObjectModel.Collection`1<winui_local_movie.VideoModel>
+            case 26:   //  System.Collections.ObjectModel.Collection`1<winui_local_movie.VideoModel>
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.Activator = Activate_24_Collection;
-                userType.StaticInitializer = StaticInitializer_24_Collection;
-                userType.CollectionAdd = VectorAdd_24_Collection;
+                userType.Activator = Activate_26_Collection;
+                userType.StaticInitializer = StaticInitializer_26_Collection;
+                userType.CollectionAdd = VectorAdd_26_Collection;
                 xamlType = userType;
                 break;
 
-            case 25:   //  winui_local_movie.VideoModel
+            case 27:   //  winui_local_movie.VideoModel
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.Activator = Activate_25_VideoModel;
-                userType.StaticInitializer = StaticInitializer_25_VideoModel;
+                userType.Activator = Activate_27_VideoModel;
+                userType.StaticInitializer = StaticInitializer_27_VideoModel;
                 userType.AddMemberName("Id");
                 userType.AddMemberName("Title");
                 userType.AddMemberName("FilePath");
@@ -588,40 +619,70 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 26:   //  String
+            case 28:   //  String
                 xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 27:   //  TimeSpan
+            case 29:   //  TimeSpan
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
-                userType.StaticInitializer = StaticInitializer_27_TimeSpan;
+                userType.StaticInitializer = StaticInitializer_29_TimeSpan;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 28:   //  System.DateTime
+            case 30:   //  System.DateTime
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
-                userType.StaticInitializer = StaticInitializer_28_DateTime;
+                userType.StaticInitializer = StaticInitializer_30_DateTime;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 29:   //  winui_local_movie.MainWindow
+            case 31:   //  winui_local_movie.MainWindow
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Window"));
-                userType.Activator = Activate_29_MainWindow;
-                userType.StaticInitializer = StaticInitializer_29_MainWindow;
+                userType.Activator = Activate_31_MainWindow;
+                userType.StaticInitializer = StaticInitializer_31_MainWindow;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 30:   //  Microsoft.UI.Xaml.Window
+            case 32:   //  Microsoft.UI.Xaml.Window
                 xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 31:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
+            case 33:   //  Microsoft.UI.Xaml.Controls.ProgressBar
+                userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Primitives.RangeBase"));
+                userType.Activator = Activate_33_ProgressBar;
+                userType.StaticInitializer = StaticInitializer_33_ProgressBar;
+                userType.AddMemberName("IsIndeterminate");
+                userType.AddMemberName("ShowError");
+                userType.AddMemberName("ShowPaused");
+                userType.AddMemberName("TemplateSettings");
+                xamlType = userType;
+                break;
+
+            case 34:   //  Microsoft.UI.Xaml.Controls.Primitives.RangeBase
+                xamlType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 35:   //  Microsoft.UI.Xaml.Controls.ProgressBarTemplateSettings
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
-                userType.Activator = Activate_31_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_31_TreeViewNode;
+                userType.StaticInitializer = StaticInitializer_35_ProgressBarTemplateSettings;
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 36:   //  winui_local_movie.SettingsPage
+                userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
+                userType.Activator = Activate_36_SettingsPage;
+                userType.StaticInitializer = StaticInitializer_36_SettingsPage;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 37:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
+                userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
+                userType.Activator = Activate_37_TreeViewNode;
+                userType.StaticInitializer = StaticInitializer_37_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -633,10 +694,10 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 32:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
+            case 38:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_32_IList;
-                userType.CollectionAdd = VectorAdd_32_IList;
+                userType.StaticInitializer = StaticInitializer_38_IList;
+                userType.CollectionAdd = VectorAdd_38_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
@@ -954,52 +1015,87 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
             var that = (global::winui_local_movie.VideoModel)instance;
             that.IsWatchLater = (global::System.Boolean)Value;
         }
-        private object get_27_TreeViewNode_Children(object instance)
+        private object get_27_ProgressBar_IsIndeterminate(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ProgressBar)instance;
+            return that.IsIndeterminate;
+        }
+        private void set_27_ProgressBar_IsIndeterminate(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ProgressBar)instance;
+            that.IsIndeterminate = (global::System.Boolean)Value;
+        }
+        private object get_28_ProgressBar_ShowError(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ProgressBar)instance;
+            return that.ShowError;
+        }
+        private void set_28_ProgressBar_ShowError(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ProgressBar)instance;
+            that.ShowError = (global::System.Boolean)Value;
+        }
+        private object get_29_ProgressBar_ShowPaused(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ProgressBar)instance;
+            return that.ShowPaused;
+        }
+        private void set_29_ProgressBar_ShowPaused(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ProgressBar)instance;
+            that.ShowPaused = (global::System.Boolean)Value;
+        }
+        private object get_30_ProgressBar_TemplateSettings(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ProgressBar)instance;
+            return that.TemplateSettings;
+        }
+        private object get_31_TreeViewNode_Children(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.Children;
         }
-        private object get_28_TreeViewNode_Content(object instance)
+        private object get_32_TreeViewNode_Content(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.Content;
         }
-        private void set_28_TreeViewNode_Content(object instance, object Value)
+        private void set_32_TreeViewNode_Content(object instance, object Value)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             that.Content = (global::System.Object)Value;
         }
-        private object get_29_TreeViewNode_Depth(object instance)
+        private object get_33_TreeViewNode_Depth(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.Depth;
         }
-        private object get_30_TreeViewNode_HasChildren(object instance)
+        private object get_34_TreeViewNode_HasChildren(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.HasChildren;
         }
-        private object get_31_TreeViewNode_HasUnrealizedChildren(object instance)
+        private object get_35_TreeViewNode_HasUnrealizedChildren(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.HasUnrealizedChildren;
         }
-        private void set_31_TreeViewNode_HasUnrealizedChildren(object instance, object Value)
+        private void set_35_TreeViewNode_HasUnrealizedChildren(object instance, object Value)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             that.HasUnrealizedChildren = (global::System.Boolean)Value;
         }
-        private object get_32_TreeViewNode_IsExpanded(object instance)
+        private object get_36_TreeViewNode_IsExpanded(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.IsExpanded;
         }
-        private void set_32_TreeViewNode_IsExpanded(object instance, object Value)
+        private void set_36_TreeViewNode_IsExpanded(object instance, object Value)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             that.IsExpanded = (global::System.Boolean)Value;
         }
-        private object get_33_TreeViewNode_Parent(object instance)
+        private object get_37_TreeViewNode_Parent(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.Parent;
@@ -1190,50 +1286,77 @@ namespace winui_local_movie.winui_local_movie_XamlTypeInfo
                 xamlMember.Getter = get_26_VideoModel_IsWatchLater;
                 xamlMember.Setter = set_26_VideoModel_IsWatchLater;
                 break;
+            case "Microsoft.UI.Xaml.Controls.ProgressBar.IsIndeterminate":
+                userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ProgressBar");
+                xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "IsIndeterminate", "Boolean");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_27_ProgressBar_IsIndeterminate;
+                xamlMember.Setter = set_27_ProgressBar_IsIndeterminate;
+                break;
+            case "Microsoft.UI.Xaml.Controls.ProgressBar.ShowError":
+                userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ProgressBar");
+                xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "ShowError", "Boolean");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_28_ProgressBar_ShowError;
+                xamlMember.Setter = set_28_ProgressBar_ShowError;
+                break;
+            case "Microsoft.UI.Xaml.Controls.ProgressBar.ShowPaused":
+                userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ProgressBar");
+                xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "ShowPaused", "Boolean");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_29_ProgressBar_ShowPaused;
+                xamlMember.Setter = set_29_ProgressBar_ShowPaused;
+                break;
+            case "Microsoft.UI.Xaml.Controls.ProgressBar.TemplateSettings":
+                userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ProgressBar");
+                xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "TemplateSettings", "Microsoft.UI.Xaml.Controls.ProgressBarTemplateSettings");
+                xamlMember.Getter = get_30_ProgressBar_TemplateSettings;
+                xamlMember.SetIsReadOnly();
+                break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Children":
                 userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "Children", "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>");
-                xamlMember.Getter = get_27_TreeViewNode_Children;
+                xamlMember.Getter = get_31_TreeViewNode_Children;
                 xamlMember.SetIsReadOnly();
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Content":
                 userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "Content", "Object");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_28_TreeViewNode_Content;
-                xamlMember.Setter = set_28_TreeViewNode_Content;
+                xamlMember.Getter = get_32_TreeViewNode_Content;
+                xamlMember.Setter = set_32_TreeViewNode_Content;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Depth":
                 userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "Depth", "Int32");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_29_TreeViewNode_Depth;
+                xamlMember.Getter = get_33_TreeViewNode_Depth;
                 xamlMember.SetIsReadOnly();
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasChildren":
                 userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "HasChildren", "Boolean");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_30_TreeViewNode_HasChildren;
+                xamlMember.Getter = get_34_TreeViewNode_HasChildren;
                 xamlMember.SetIsReadOnly();
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasUnrealizedChildren":
                 userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "HasUnrealizedChildren", "Boolean");
-                xamlMember.Getter = get_31_TreeViewNode_HasUnrealizedChildren;
-                xamlMember.Setter = set_31_TreeViewNode_HasUnrealizedChildren;
+                xamlMember.Getter = get_35_TreeViewNode_HasUnrealizedChildren;
+                xamlMember.Setter = set_35_TreeViewNode_HasUnrealizedChildren;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.IsExpanded":
                 userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "IsExpanded", "Boolean");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_32_TreeViewNode_IsExpanded;
-                xamlMember.Setter = set_32_TreeViewNode_IsExpanded;
+                xamlMember.Getter = get_36_TreeViewNode_IsExpanded;
+                xamlMember.Setter = set_36_TreeViewNode_IsExpanded;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Parent":
                 userType = (global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::winui_local_movie.winui_local_movie_XamlTypeInfo.XamlMember(this, "Parent", "Microsoft.UI.Xaml.Controls.TreeViewNode");
-                xamlMember.Getter = get_33_TreeViewNode_Parent;
+                xamlMember.Getter = get_37_TreeViewNode_Parent;
                 xamlMember.SetIsReadOnly();
                 break;
             }
