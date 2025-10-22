@@ -100,15 +100,8 @@ namespace winui_local_movie
           video.IsFavorite = !video.IsFavorite;
           await _databaseService.UpdateVideoFavoriteStatusAsync(video.Id, video.IsFavorite);
 
-          // 更新UI反馈
-          var dialog = new ContentDialog
-          {
-            Title = "提示",
-            Content = video.IsFavorite ? "已添加到喜欢" : "已取消喜欢",
-            CloseButtonText = "确定",
-            XamlRoot = this.Content.XamlRoot
-          };
-          await dialog.ShowAsync();
+          // 直接更新按钮UI，无需弹窗
+          UpdateFavoriteButtonUI(button, video.IsFavorite);
         }
         catch (Exception ex)
         {
@@ -129,21 +122,32 @@ namespace winui_local_movie
           video.IsWatchLater = !video.IsWatchLater;
           await _databaseService.UpdateVideoWatchLaterStatusAsync(video.Id, video.IsWatchLater);
 
-          // 更新UI反馈
-          var dialog = new ContentDialog
-          {
-            Title = "提示",
-            Content = video.IsWatchLater ? "已添加到稍后再看" : "已取消稍后再看",
-            CloseButtonText = "确定",
-            XamlRoot = this.Content.XamlRoot
-          };
-          await dialog.ShowAsync();
+          // 直接更新按钮UI，无需弹窗
+          UpdateWatchLaterButtonUI(button, video.IsWatchLater);
         }
         catch (Exception ex)
         {
           await ShowErrorDialog($"操作失败: {ex.Message}");
         }
       }
+    }
+
+    // 更新喜欢按钮UI的方法
+    private void UpdateFavoriteButtonUI(Button button, bool isFavorite)
+    {
+      button.Content = isFavorite ? "❤" : "♡";
+      button.Foreground = isFavorite ?
+          new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) :
+          new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Gray);
+    }
+
+    // 更新稍后再看按钮UI的方法
+    private void UpdateWatchLaterButtonUI(Button button, bool isWatchLater)
+    {
+      button.Content = isWatchLater ? "⏱" : "⏳";
+      button.Foreground = isWatchLater ?
+          new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Orange) :
+          new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Gray);
     }
 
     // 删除文件按钮点击事件

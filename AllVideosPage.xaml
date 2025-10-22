@@ -21,63 +21,70 @@
               IsItemClickEnabled="True"
               ItemClick="VideosGridView_ItemClick">
       <GridView.ItemTemplate>
-    <DataTemplate x:DataType="local:VideoModel">
-        <StackPanel Width="200" Height="180" Margin="5">
+        <DataTemplate x:DataType="local:VideoModel">
+          <StackPanel Width="200"
+              Height="180"
+              Margin="5">
             <!-- 上方缩略图区域 -->
-            <Border Background="LightGray" Height="100" 
+            <Border Background="LightGray"
+                Height="100"
                     Tapped="Thumbnail_Tapped">
-                <Image Source="{x:Bind GetThumbnailPath(FilePath)}" 
-                       Stretch="UniformToFill"
-                       HorizontalAlignment="Center" 
-                       VerticalAlignment="Center"/>
+              <Image Source="{x:Bind GetThumbnailPath(FilePath)}"
+                     Stretch="UniformToFill"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"/>
             </Border>
-            
+
             <!-- 下方按钮区域 -->
-            <StackPanel Orientation="Horizontal" 
-                        HorizontalAlignment="Center" 
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
                         Margin="0,5,0,0">
-                <Button Content="❤" 
-                        FontSize="16"
-                        Width="40"
-                        Height="40"
-                        Margin="2"
-                        Click="FavoriteButton_Click"
-                        Tag="{x:Bind}"/>
-                <Button Content="⏱" 
-                        FontSize="16"
-                        Width="40"
-                        Height="40"
-                        Margin="2"
-                        Click="WatchLaterButton_Click"
-                        Tag="{x:Bind}"/>
-                <Button Content="🗑" 
-                        FontSize="16"
-                        Width="40"
-                        Height="40"
-                        Margin="2"
-                        Click="DeleteButton_Click"
-                        Tag="{x:Bind}"/>
-                <Button Content="ℹ" 
-                        FontSize="16"
-                        Width="40"
-                        Height="40"
-                        Margin="2"
-                        Click="DetailsButton_Click"
-                        Tag="{x:Bind}"/>
+              <Button Content="{x:Bind GetFavoriteIcon(IsFavorite)}"
+                      Foreground="{x:Bind GetFavoriteColor(IsFavorite)}"
+                      FontSize="16"
+                      Width="40"
+                      Height="40"
+                      Margin="2"
+                      Click="FavoriteButton_Click"
+                      Tag="{x:Bind}"/>
+
+              <!-- 修改稍后再看按钮 -->
+              <Button Content="{x:Bind GetWatchLaterIcon(IsWatchLater)}"
+                      Foreground="{x:Bind GetWatchLaterColor(IsWatchLater)}"
+                      FontSize="16"
+                      Width="40"
+                      Height="40"
+                      Margin="2"
+                      Click="WatchLaterButton_Click"
+                      Tag="{x:Bind}"/>
+              <Button Content="🗑"
+                      FontSize="16"
+                      Width="40"
+                      Height="40"
+                      Margin="2"
+                      Click="DeleteButton_Click"
+                      Tag="{x:Bind}"/>
+              <Button Content="ℹ"
+                      FontSize="16"
+                      Width="40"
+                      Height="40"
+                      Margin="2"
+                      Click="DetailsButton_Click"
+                      Tag="{x:Bind}"/>
             </StackPanel>
-            
+
             <!-- 视频标题和时长 -->
-            <TextBlock Text="{x:Bind Title}" 
-                       FontWeight="Bold" 
+            <TextBlock Text="{x:Bind Title}"
+                       FontWeight="Bold"
                        TextWrapping="Wrap"
                        MaxLines="1"
                        Margin="0,2,0,0"/>
-            <TextBlock Text="{x:Bind FormatDuration(Duration)}" 
-                       FontSize="12" 
+            <TextBlock Text="{x:Bind FormatDuration(Duration)}"
+                       FontSize="12"
                        Foreground="Gray"/>
-        </StackPanel>
-    </DataTemplate>
-</GridView.ItemTemplate>
+          </StackPanel>
+        </DataTemplate>
+      </GridView.ItemTemplate>
     </GridView>
 
     <!-- 分页控件 -->
