@@ -146,13 +146,18 @@ namespace winui_local_movie
         {
           // 获取视频时长
           var duration = await GetVideoDurationAsync(file);
+          var fileInfo = new FileInfo(file);
+          double fileSizeMB = Math.Round(fileInfo.Length / 1024.0 / 1024.0, 0);
+
 
           var video = new VideoModel
           {
             Title = Path.GetFileNameWithoutExtension(file),
             FilePath = file,
             DateAdded = DateTime.Now,
-            Duration = duration  // 使用实际获取的时长
+            Duration = duration,  // 使用实际获取的时长
+            FileSize = (long)fileSizeMB,
+            CreationDate = fileInfo.CreationTime
           };
 
           await _databaseService.AddVideoAsync(video);
@@ -162,6 +167,7 @@ namespace winui_local_movie
 
       return scannedVideos;
     }
+
     private async Task<TimeSpan> GetVideoDurationAsync(string filePath)
     {
       try

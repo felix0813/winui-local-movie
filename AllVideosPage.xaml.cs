@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Windows.Storage;
 
 namespace winui_local_movie
 {
@@ -200,6 +201,57 @@ namespace winui_local_movie
         }
       }
     }
+    private async void RefreshMetadataButton_Click(object sender, RoutedEventArgs e)
+    {
+      if (sender is Button btn && btn.Tag is VideoModel video)
+      {
+        // 获取视频时长
+        TimeSpan duration = await GetVideoDurationAsync(video.FilePath);
+
+        // 获取文件大小（MB）
+        double fileSizeMB = 0;
+        if (File.Exists(video.FilePath))
+        {
+          var fileInfo = new FileInfo(video.FilePath);
+          fileSizeMB = Math.Round(fileInfo.Length / 1024.0 / 1024.0, 0);
+        }
+
+        // 更新数据库
+        await ((App)Application.Current).DatabaseService.RefreshVideoMetadataAsync(
+            video.FilePath,
+            async (path) => await GetVideoDurationAsync(path)
+        );
+
+        // 可选：刷新界面数据
+        video.Duration = duration;
+        video.FileSize = (long)fileSizeMB;
+        // 如果有刷新列表方法，建议调用
+        // await LoadVideosAsync();
+
+        var dialog = new ContentDialog
+        {
+          Title = "提示",
+          Content = "元数据已刷新",
+          CloseButtonText = "确定",
+          XamlRoot = this.Content.XamlRoot
+        };
+        await dialog.ShowAsync();
+      }
+    }
+    private async Task<TimeSpan> GetVideoDurationAsync(string filePath)
+    {
+      try
+      {
+        var file = await StorageFile.GetFileFromPathAsync(filePath);
+        var basicProperties = await file.Properties.GetVideoPropertiesAsync();
+        return basicProperties.Duration;
+      }
+      catch (Exception)
+      {
+        return TimeSpan.Zero; // 如果无法获取时长，返回默认值  
+      }
+    }
+
 
     // 详情页按钮点击事件 (TODO)
     private void DetailsButton_Click(object sender, RoutedEventArgs e)

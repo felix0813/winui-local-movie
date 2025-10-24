@@ -16,6 +16,9 @@ namespace winui_local_movie
     public bool IsFavorite { get; set; }
     public bool IsWatchLater { get; set; }
 
+    public long FileSize { get; set; }
+    public DateTime? CreationDate { get; set; }
+
     public Microsoft.UI.Xaml.Media.ImageSource? GetThumbnailPath(string videoFilePath)
     {
       if (string.IsNullOrEmpty(videoFilePath))

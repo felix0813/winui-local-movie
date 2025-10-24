@@ -31,19 +31,22 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = @"
-                CREATE TABLE IF NOT EXISTS Videos (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Title TEXT NOT NULL,
-                    FilePath TEXT NOT NULL UNIQUE,
-                    ThumbnailPath TEXT,
-                    Duration TEXT,
-                    DateAdded TEXT NOT NULL,
-                    IsFavorite INTEGER DEFAULT 0,
-                    IsWatchLater INTEGER DEFAULT 0
-                )";
+    CREATE TABLE IF NOT EXISTS Videos (
+        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Title TEXT NOT NULL,
+        FilePath TEXT NOT NULL UNIQUE,
+        ThumbnailPath TEXT,
+        Duration TEXT,
+        DateAdded TEXT NOT NULL,
+        IsFavorite INTEGER DEFAULT 0,
+        IsWatchLater INTEGER DEFAULT 0,
+        FileSize INTEGER DEFAULT 0,
+    CreationDate TEXT
+    )";
       command.ExecuteNonQuery();
     }
 
+    // 在 DatabaseService.cs 中更新 AddVideoAsync 方法
     public async Task AddVideoAsync(VideoModel video)
     {
       using var connection = new SqliteConnection(_connectionString);
@@ -51,10 +54,11 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = @"
-                INSERT OR REPLACE INTO Videos 
-                (Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater)
-                VALUES (@Title, @FilePath, @ThumbnailPath, @Duration, @DateAdded, @IsFavorite, @IsWatchLater)";
+INSERT OR REPLACE INTO Videos 
+(Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate)
+VALUES (@Title, @FilePath, @ThumbnailPath, @Duration, @DateAdded, @IsFavorite, @IsWatchLater, @FileSize, @CreationDate)";
 
+      command.Parameters.AddWithValue("@FileSize", video.FileSize);
       command.Parameters.AddWithValue("@Title", video.Title);
       command.Parameters.AddWithValue("@FilePath", video.FilePath);
       command.Parameters.AddWithValue("@ThumbnailPath", video.ThumbnailPath ?? "");
@@ -62,6 +66,7 @@ namespace winui_local_movie
       command.Parameters.AddWithValue("@DateAdded", video.DateAdded.ToString("o"));
       command.Parameters.AddWithValue("@IsFavorite", video.IsFavorite ? 1 : 0);
       command.Parameters.AddWithValue("@IsWatchLater", video.IsWatchLater ? 1 : 0);
+      command.Parameters.AddWithValue("@CreationDate", (object)video.CreationDate?.ToString("o") ?? DBNull.Value);
 
       await command.ExecuteNonQueryAsync();
     }
@@ -75,7 +80,7 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = @"
-                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater
+                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate
                 FROM Videos 
                 ORDER BY DateAdded DESC 
                 LIMIT @Count";
@@ -93,7 +98,10 @@ namespace winui_local_movie
           Duration = TimeSpan.Parse(reader.GetString("Duration")),
           DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
           IsFavorite = reader.GetInt32("IsFavorite") == 1,
-          IsWatchLater = reader.GetInt32("IsWatchLater") == 1
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
+          FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
+          CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+
         });
       }
 
@@ -109,7 +117,7 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = @"
-                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater
+                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate
                 FROM Videos 
                 WHERE IsWatchLater = 1
                 ORDER BY DateAdded DESC";
@@ -126,7 +134,10 @@ namespace winui_local_movie
           Duration = TimeSpan.Parse(reader.GetString("Duration")),
           DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
           IsFavorite = reader.GetInt32("IsFavorite") == 1,
-          IsWatchLater = reader.GetInt32("IsWatchLater") == 1
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
+          FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
+          CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+
         });
       }
 
@@ -142,7 +153,7 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = @"
-                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater
+                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate
                 FROM Videos 
                 WHERE IsFavorite = 1
                 ORDER BY DateAdded DESC";
@@ -159,7 +170,10 @@ namespace winui_local_movie
           Duration = TimeSpan.Parse(reader.GetString("Duration")),
           DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
           IsFavorite = reader.GetInt32("IsFavorite") == 1,
-          IsWatchLater = reader.GetInt32("IsWatchLater") == 1
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
+          FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
+          CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+
         });
       }
 
@@ -186,7 +200,7 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = @"
-        SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater
+        SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate
         FROM Videos 
         ORDER BY DateAdded DESC 
         LIMIT @Limit OFFSET @Offset";
@@ -205,7 +219,10 @@ namespace winui_local_movie
           Duration = TimeSpan.Parse(reader.GetString("Duration")),
           DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
           IsFavorite = reader.GetInt32("IsFavorite") == 1,
-          IsWatchLater = reader.GetInt32("IsWatchLater") == 1
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
+          FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
+          CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+
         });
       }
 
@@ -248,5 +265,47 @@ namespace winui_local_movie
 
       await command.ExecuteNonQueryAsync();
     }
+    public async Task RefreshVideoMetadataAsync(string filePath, Func<string, Task<TimeSpan>>? getDurationAsync = null)
+    {
+      // 获取文件大小（MB）
+      double fileSizeMB = 0;
+      if (File.Exists(filePath))
+      {
+        var fileInfo = new FileInfo(filePath);
+        fileSizeMB = Math.Round(fileInfo.Length / 1024.0 / 1024.0, 2);
+      }
+
+      // 获取时长（可选，需UI层传入委托）
+      TimeSpan duration = TimeSpan.Zero;
+      if (getDurationAsync != null)
+      {
+        duration = await getDurationAsync(filePath);
+      }
+
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      if (getDurationAsync != null)
+      {
+        command.CommandText = @"
+            UPDATE Videos 
+            SET FileSize = @FileSize, Duration = @Duration
+            WHERE FilePath = @FilePath";
+        command.Parameters.AddWithValue("@Duration", duration.ToString());
+      }
+      else
+      {
+        command.CommandText = @"
+            UPDATE Videos 
+            SET FileSize = @FileSize
+            WHERE FilePath = @FilePath";
+      }
+      command.Parameters.AddWithValue("@FileSize", fileSizeMB);
+      command.Parameters.AddWithValue("@FilePath", filePath);
+
+      await command.ExecuteNonQueryAsync();
+    }
+
   }
 }
