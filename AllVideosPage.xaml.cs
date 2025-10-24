@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.Streams;
 
 namespace winui_local_movie
 {
@@ -219,6 +220,8 @@ namespace winui_local_movie
           var fileInfo = new FileInfo(video.FilePath);
           fileSizeMB = Math.Round(fileInfo.Length / 1024.0 / 1024.0, 0);
         }
+        // 异步执行缩略图生成，不等待完成
+        Task.Run(async () => await GenerateThumbnailAsync(video.FilePath));
 
         // 更新数据库
         await ((App)Application.Current).DatabaseService.RefreshVideoMetadataAsync(
@@ -241,6 +244,55 @@ namespace winui_local_movie
         };
         await dialog.ShowAsync();
       }
+    }
+    private async Task<string> GenerateThumbnailAsync(string videoPath)
+    {
+      try
+      {
+        if (!File.Exists(videoPath))
+          return null;
+
+        // 生成缩略图路径：与视频同目录，文件名为 [原文件名]-poster.jpg
+        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(videoPath);
+        string directory = Path.GetDirectoryName(videoPath);
+        string thumbnailPath = Path.Combine(directory, $"{fileNameWithoutExtension}-poster.jpg");
+
+        // 如果缩略图已存在，直接返回路径
+        if (File.Exists(thumbnailPath))
+          return thumbnailPath;
+
+        // 使用 Windows.Storage API 生成缩略图
+        var storageFile = await StorageFile.GetFileFromPathAsync(videoPath);
+        var thumbnail = await storageFile.GetThumbnailAsync(
+            Windows.Storage.FileProperties.ThumbnailMode.SingleItem,
+            320, // 缩略图大小
+            Windows.Storage.FileProperties.ThumbnailOptions.UseCurrentScale);
+
+        if (thumbnail != null && thumbnail.Size > 0)
+        {
+          // 使用更可靠的方式保存缩略图
+          var folder = await StorageFolder.GetFolderFromPathAsync(directory);
+          var thumbnailFile = await folder.CreateFileAsync($"{fileNameWithoutExtension}-poster.jpg",
+              CreationCollisionOption.ReplaceExisting);
+
+          // 将缩略图数据写入文件
+          using (var inputStream = thumbnail.GetInputStreamAt(0))
+          using (var outputStream = await thumbnailFile.OpenAsync(FileAccessMode.ReadWrite))
+          {
+            await RandomAccessStream.CopyAsync(inputStream, outputStream);
+          }
+
+          return thumbnailPath;
+        }
+      }
+      catch (Exception ex)
+      {
+        // 记录错误信息到调试输出
+        System.Diagnostics.Debug.WriteLine($"生成缩略图失败: {ex.Message}");
+        System.Diagnostics.Debug.WriteLine($"堆栈跟踪: {ex.StackTrace}");
+      }
+
+      return null;
     }
 
     private async Task<TimeSpan> GetVideoDurationAsync(string filePath)
