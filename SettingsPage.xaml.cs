@@ -14,13 +14,16 @@ namespace winui_local_movie
   {
     private readonly DatabaseService _databaseService;
     private readonly List<string> _directories;
-    private readonly ApplicationDataContainer _localSettings;
+    private readonly string _settingsFilePath;
+
 
     public SettingsPage()
     {
       this.InitializeComponent();
       _databaseService = ((App)Application.Current).DatabaseService;
-      _localSettings = ApplicationData.Current.LocalSettings;
+
+      // 使用exe目录下的配置文件
+      _settingsFilePath = Path.Combine(AppContext.BaseDirectory, "app_settings.json");
 
       _directories = LoadDirectoriesFromSettings();
       DirectoriesListView.ItemsSource = _directories;
@@ -29,11 +32,27 @@ namespace winui_local_movie
     private List<string> LoadDirectoriesFromSettings()
     {
       var directories = new List<string>();
-      var savedDirectories = _localSettings.Values["VideoDirectories"] as string;
 
-      if (!string.IsNullOrEmpty(savedDirectories))
+      if (File.Exists(_settingsFilePath))
       {
-        directories.AddRange(savedDirectories.Split('|'));
+        try
+        {
+          var json = File.ReadAllText(_settingsFilePath);
+          var settings = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+
+          if (settings.ContainsKey("VideoDirectories") && settings["VideoDirectories"] != null)
+          {
+            var dirsJson = settings["VideoDirectories"].ToString();
+            if (!string.IsNullOrEmpty(dirsJson))
+            {
+              directories.AddRange(dirsJson.Split('|'));
+            }
+          }
+        }
+        catch
+        {
+          // 如果读取或解析失败，返回空列表
+        }
       }
 
       return directories;
@@ -41,7 +60,20 @@ namespace winui_local_movie
 
     private void SaveDirectoriesToSettings()
     {
-      _localSettings.Values["VideoDirectories"] = string.Join("|", _directories);
+      try
+      {
+        var settings = new Dictionary<string, object>
+        {
+          ["VideoDirectories"] = string.Join("|", _directories)
+        };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(_settingsFilePath, json);
+      }
+      catch
+      {
+        // 如果保存失败，静默处理
+      }
     }
 
     private async void SelectDirectory_Click(object sender, RoutedEventArgs e)

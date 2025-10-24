@@ -15,49 +15,52 @@ namespace winui_local_movie
     private int _currentPage = 1;
     private const int PageSize = 100;
     private int _totalVideos;
+    private string _currentSortProperty = "DateAdded";
+    private bool _isAscending = false;
 
     public AllVideosPage()
     {
       this.InitializeComponent();
       _databaseService = ((App)Application.Current).DatabaseService;
-      LoadVideosAsync();
+      LoadVideosAsync(_currentPage);
     }
-    // 添加以下方法到 AllVideosPage 类中
 
-
-    private async void LoadVideosAsync()
+    // 修改 LoadVideosAsync 方法以支持排序
+    private async Task LoadVideosAsync(int page)
     {
-      try
+      int pageSize = 100; // 每页显示的视频数量
+      int offset = (page - 1) * pageSize;
+
+      List<VideoModel> videos = new List<VideoModel>();
+
+      // 根据当前排序选项获取数据
+      switch (_currentSortProperty)
       {
-        // 获取总视频数
-        _totalVideos = await _databaseService.GetTotalVideosCountAsync();
-
-        // 计算总页数
-        int totalPages = (int)Math.Ceiling((double)_totalVideos / PageSize);
-
-        // 加载当前页数据
-        var videos = await _databaseService.GetVideosAsync((_currentPage - 1) * PageSize, PageSize);
-        VideosGridView.ItemsSource = videos;
-
-        // 更新分页信息
-        PageInfoText.Text = $"第 {_currentPage} 页，共 {totalPages} 页";
-
-        // 更新按钮状态
-        PreviousPageButton.IsEnabled = _currentPage > 1;
-        NextPageButton.IsEnabled = _currentPage < totalPages;
+        case "FileSize":
+          videos = await _databaseService.GetVideosSortedByFileSizeAsync(!_isAscending, offset, pageSize);
+          break;
+        case "CreationDate":
+          videos = await _databaseService.GetVideosSortedByCreationDateAsync(!_isAscending, offset, pageSize);
+          break;
+        case "Duration":
+          videos = await _databaseService.GetVideosSortedByDurationAsync(!_isAscending, offset, pageSize);
+          break;
+        case "DateAdded":
+        default:
+          videos = await _databaseService.GetVideosSortedByDateAddedAsync(!_isAscending, offset, pageSize);
+          break;
       }
-      catch (Exception ex)
-      {
-        // 处理异常
-        var dialog = new ContentDialog
-        {
-          Title = "错误",
-          Content = $"加载视频时出错: {ex.Message}",
-          CloseButtonText = "确定",
-          XamlRoot = this.Content.XamlRoot
-        };
-        await dialog.ShowAsync();
-      }
+
+      VideosGridView.ItemsSource = videos;
+
+      // 更新分页信息
+      _totalVideos = await _databaseService.GetTotalVideosCountAsync();
+      int totalPages = (int)Math.Ceiling((double)_totalVideos / pageSize);
+      PageInfoText.Text = $"第 {page} 页，共 {totalPages} 页";
+
+      // 更新按钮状态
+      PreviousPageButton.IsEnabled = page > 1;
+      NextPageButton.IsEnabled = page < totalPages;
     }
 
     private void PreviousPageButton_Click(object sender, RoutedEventArgs e)
@@ -65,7 +68,7 @@ namespace winui_local_movie
       if (_currentPage > 1)
       {
         _currentPage--;
-        LoadVideosAsync();
+        LoadVideosAsync(_currentPage);
       }
     }
 
@@ -75,7 +78,7 @@ namespace winui_local_movie
       if (_currentPage < totalPages)
       {
         _currentPage++;
-        LoadVideosAsync();
+        LoadVideosAsync(_currentPage);
       }
     }
 
@@ -182,7 +185,7 @@ namespace winui_local_movie
             await _databaseService.DeleteVideoAsync(video.Id);
 
             // 重新加载当前页
-            LoadVideosAsync();
+            LoadVideosAsync(_currentPage);
 
             // 提示删除成功
             var successDialog = new ContentDialog
@@ -201,6 +204,7 @@ namespace winui_local_movie
         }
       }
     }
+
     private async void RefreshMetadataButton_Click(object sender, RoutedEventArgs e)
     {
       if (sender is Button btn && btn.Tag is VideoModel video)
@@ -238,6 +242,7 @@ namespace winui_local_movie
         await dialog.ShowAsync();
       }
     }
+
     private async Task<TimeSpan> GetVideoDurationAsync(string filePath)
     {
       try
@@ -285,6 +290,7 @@ namespace winui_local_movie
         await ShowErrorDialog($"无法打开视频: {ex.Message}");
       }
     }
+
     // 添加这个方法到 AllVideosPage 类中
     private void VideosGridView_ItemClick(object sender, ItemClickEventArgs e)
     {
@@ -304,6 +310,30 @@ namespace winui_local_movie
         XamlRoot = this.Content.XamlRoot
       };
       await dialog.ShowAsync();
+    }
+
+    // 排序属性选择变化事件
+    private void SortPropertyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      if (SortPropertyComboBox.SelectedItem is ComboBoxItem selectedItem)
+      {
+        _currentSortProperty = selectedItem.Tag.ToString();
+      }
+    }
+
+    // 排序方向选择变化事件
+    private void SortOrderComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      if (SortOrderComboBox.SelectedItem is ComboBoxItem selectedItem)
+      {
+        _isAscending = selectedItem.Tag.ToString() == "ASC";
+      }
+    }
+
+    // 应用排序按钮点击事件
+    private async void ApplySortButton_Click(object sender, RoutedEventArgs e)
+    {
+      await LoadVideosAsync(_currentPage);
     }
   }
 }
