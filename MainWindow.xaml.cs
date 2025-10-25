@@ -25,30 +25,6 @@ namespace winui_local_movie
     {
       LoadHomePage();
     }
-
-    private void ShowLater_Click(object sender, RoutedEventArgs e)
-    {
-      var dlg = new ContentDialog
-      {
-        Title = "稍后播放",
-        Content = "功能开发中...",
-        CloseButtonText = "确定",
-        XamlRoot = ContentFrame.XamlRoot
-      };
-      dlg.ShowAsync();
-    }
-
-    private void ShowLiked_Click(object sender, RoutedEventArgs e)
-    {
-      var dlg = new ContentDialog
-      {
-        Title = "喜欢",
-        Content = "功能开发中...",
-        CloseButtonText = "确定",
-        XamlRoot = ContentFrame.XamlRoot
-      };
-      dlg.ShowAsync();
-    }
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
       ContentFrame.Content = new SettingsPage();

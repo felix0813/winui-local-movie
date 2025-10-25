@@ -16,27 +16,23 @@
 
     <!-- 顶部按钮栏 -->
     <Grid Grid.Row="0"
-        Margin="8">
+          Margin="8">
       <StackPanel Orientation="Horizontal"
-          HorizontalAlignment="Left"
-          Spacing="8">
+                  HorizontalAlignment="Left"
+                  Spacing="8">
         <Button Content="首页"
-            Click="GoHome_Click"/>
+                Click="GoHome_Click"/>
         <Button Content="所有视频"
                 Click="ShowAllVideos_Click"/>
-        <Button Content="稍后播放"
-            Click="ShowLater_Click"/>
-        <Button Content="喜欢"
-            Click="ShowLiked_Click"/>
       </StackPanel>
       <Button Content="设置"
-          Click="Settings_Click"
-          HorizontalAlignment="Right"/>
+              Click="Settings_Click"
+              HorizontalAlignment="Right"/>
     </Grid>
 
     <!-- 主内容区 -->
     <Frame x:Name="ContentFrame"
-        Grid.Row="1"
-        Margin="8"/>
+           Grid.Row="1"
+           Margin="8"/>
   </Grid>
 </Window>

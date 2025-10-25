@@ -27,8 +27,22 @@ namespace winui_local_movie
 
       _directories = LoadDirectoriesFromSettings();
       DirectoriesListView.ItemsSource = _directories;
+      ShowConfigFilePath();
     }
-
+    private void ShowConfigFilePath()
+    {
+      try
+      {
+        // 获取配置文件路径
+        var appDirectory = AppContext.BaseDirectory;
+        var configPath = Path.Combine(appDirectory);
+        ConfigPathText.Text = configPath;
+      }
+      catch (Exception ex)
+      {
+        ConfigPathText.Text = $"无法获取路径: {ex.Message}";
+      }
+    }
     private List<string> LoadDirectoriesFromSettings()
     {
       var directories = new List<string>();

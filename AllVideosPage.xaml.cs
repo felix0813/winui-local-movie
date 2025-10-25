@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -12,6 +13,12 @@ namespace winui_local_movie
 {
   public sealed partial class AllVideosPage : Page
   {
+    private enum ViewMode
+    {
+      All,
+      Favorites,
+      WatchLater
+    }
     private readonly DatabaseService _databaseService;
     private int _currentPage = 1;
     private const int PageSize = 100;
@@ -19,49 +26,128 @@ namespace winui_local_movie
     private string _currentSortProperty = "DateAdded";
     private bool _isAscending = false;
 
+    private ViewMode currentViewMode = ViewMode.All;
+
     public AllVideosPage()
     {
       this.InitializeComponent();
       _databaseService = ((App)Application.Current).DatabaseService;
-      LoadVideosAsync(_currentPage);
+      LoadVideosAsync();
     }
-
-    // 修改 LoadVideosAsync 方法以支持排序
-    private async Task LoadVideosAsync(int page)
+    private async void FilterButton_Click(object sender, RoutedEventArgs e)
     {
-      int pageSize = 100; // 每页显示的视频数量
-      int offset = (page - 1) * pageSize;
+      var button = sender as Button;
+      var tag = button.Tag.ToString();
 
-      List<VideoModel> videos = new List<VideoModel>();
-
-      // 根据当前排序选项获取数据
-      switch (_currentSortProperty)
+      // 更新当前视图模式
+      switch (tag)
       {
-        case "FileSize":
-          videos = await _databaseService.GetVideosSortedByFileSizeAsync(!_isAscending, offset, pageSize);
+        case "All":
+          currentViewMode = ViewMode.All;
           break;
-        case "CreationDate":
-          videos = await _databaseService.GetVideosSortedByCreationDateAsync(!_isAscending, offset, pageSize);
+        case "Favorites":
+          currentViewMode = ViewMode.Favorites;
           break;
-        case "Duration":
-          videos = await _databaseService.GetVideosSortedByDurationAsync(!_isAscending, offset, pageSize);
-          break;
-        case "DateAdded":
-        default:
-          videos = await _databaseService.GetVideosSortedByDateAddedAsync(!_isAscending, offset, pageSize);
+        case "WatchLater":
+          currentViewMode = ViewMode.WatchLater;
           break;
       }
 
-      VideosGridView.ItemsSource = videos;
+      // 更新按钮样式
+      UpdateFilterButtonStyles(tag);
 
+      // 重置到第一页
+      _currentPage = 1;
+
+      // 刷新数据
+      await LoadVideosAsync();
+    }
+
+    private void UpdateFilterButtonStyles(string activeTag)
+    {
+      // 重置所有按钮样式
+      AllVideosButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
+      FavoritesButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
+      WatchLaterButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
+
+      // 设置活动按钮样式
+      switch (activeTag)
+      {
+        case "All":
+          AllVideosButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
+          break;
+        case "Favorites":
+          FavoritesButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
+          break;
+        case "WatchLater":
+          WatchLaterButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
+          break;
+      }
+    }
+
+
+    // 修改 LoadVideosAsync 方法以支持排序
+    private async Task LoadVideosAsync()
+    {
+      List<VideoModel> videos = new List<VideoModel>();
+      int totalCount = 0;
+
+      switch (currentViewMode)
+      {
+        case ViewMode.Favorites:
+          videos = await _databaseService.GetFavoriteVideosAsync();
+          totalCount = videos.Count;
+          // 应用分页
+          var favoritePageVideos = videos.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+          VideosGridView.ItemsSource = favoritePageVideos;
+          break;
+
+        case ViewMode.WatchLater:
+          videos = await _databaseService.GetWatchLaterVideosAsync();
+          totalCount = videos.Count;
+          // 应用分页
+          var watchLaterPageVideos = videos.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+          VideosGridView.ItemsSource = watchLaterPageVideos;
+          break;
+
+        default: // ViewMode.All
+                 // 根据当前排序选项获取数据
+          if (_currentSortProperty == "FileSize")
+          {
+            videos = await _databaseService.GetVideosSortedByFileSizeAsync(!_isAscending,
+                (_currentPage - 1) * PageSize, PageSize);
+          }
+          else if (_currentSortProperty == "CreationDate")
+          {
+            videos = await _databaseService.GetVideosSortedByCreationDateAsync(!_isAscending,
+                (_currentPage - 1) * PageSize, PageSize);
+          }
+          else if (_currentSortProperty == "Duration")
+          {
+            videos = await _databaseService.GetVideosSortedByDurationAsync(!_isAscending,
+                (_currentPage - 1) * PageSize, PageSize);
+          }
+          else
+          {
+            videos = await _databaseService.GetVideosSortedByDateAddedAsync(!_isAscending,
+                (_currentPage - 1) * PageSize, PageSize);
+          }
+
+          VideosGridView.ItemsSource = videos;
+          totalCount = await _databaseService.GetTotalVideosCountAsync();
+          break;
+      }
+      _totalVideos = totalCount;
       // 更新分页信息
-      _totalVideos = await _databaseService.GetTotalVideosCountAsync();
-      int totalPages = (int)Math.Ceiling((double)_totalVideos / pageSize);
-      PageInfoText.Text = $"第 {page} 页，共 {totalPages} 页";
+      int totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
+      PageInfoText.Text = $"第 {_currentPage} 页，共 {totalPages} 页";
+      TopPageInfoText.Text = PageInfoText.Text; // 同步顶部和底部的分页信息
 
       // 更新按钮状态
-      PreviousPageButton.IsEnabled = page > 1;
-      NextPageButton.IsEnabled = page < totalPages;
+      PreviousPageButton.IsEnabled = _currentPage > 1;
+      TopPreviousPageButton.IsEnabled = _currentPage > 1;
+      NextPageButton.IsEnabled = _currentPage < totalPages;
+      TopNextPageButton.IsEnabled = _currentPage < totalPages;
     }
 
     private void PreviousPageButton_Click(object sender, RoutedEventArgs e)
@@ -69,7 +155,7 @@ namespace winui_local_movie
       if (_currentPage > 1)
       {
         _currentPage--;
-        LoadVideosAsync(_currentPage);
+        LoadVideosAsync();
       }
     }
 
@@ -79,7 +165,7 @@ namespace winui_local_movie
       if (_currentPage < totalPages)
       {
         _currentPage++;
-        LoadVideosAsync(_currentPage);
+        LoadVideosAsync();
       }
     }
 
@@ -186,7 +272,7 @@ namespace winui_local_movie
             await _databaseService.DeleteVideoAsync(video.Id);
 
             // 重新加载当前页
-            LoadVideosAsync(_currentPage);
+            LoadVideosAsync();
 
             // 提示删除成功
             var successDialog = new ContentDialog
@@ -385,7 +471,7 @@ namespace winui_local_movie
     // 应用排序按钮点击事件
     private async void ApplySortButton_Click(object sender, RoutedEventArgs e)
     {
-      await LoadVideosAsync(_currentPage);
+      await LoadVideosAsync();
     }
   }
 }

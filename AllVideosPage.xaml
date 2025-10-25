@@ -15,44 +15,80 @@
       <RowDefinition Height="*"/>
       <RowDefinition Height="Auto"/>
     </Grid.RowDefinitions>
-    <StackPanel Grid.Row="0"
+        <Grid Grid.Row="0"
+      Margin="10"
+      HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <!-- 左侧导航按钮 -->
+                <ColumnDefinition Width="*"/>
+                <!-- 中间占位空白 -->
+                <ColumnDefinition Width="Auto"/>
+                <!-- 右侧排序控件 -->
+            </Grid.ColumnDefinitions>
+
+            <!-- 导航按钮 -->
+            <StackPanel Grid.Column="0"
+                Orientation="Horizontal">
+                <Button x:Name="AllVideosButton"
+                Content="全部视频"
+                Click="FilterButton_Click"
+                Tag="All"
+                Style="{StaticResource AccentButtonStyle}"
+                Margin="0,0,5,0"/>
+                <Button x:Name="FavoritesButton"
+                Content="我的喜欢"
+                Click="FilterButton_Click"
+                Tag="Favorites"
+                Margin="5,0"/>
+                <Button x:Name="WatchLaterButton"
+                Content="稍后再看"
+                Click="FilterButton_Click"
+                Tag="WatchLater"
+                Margin="5,0"/>
+            </StackPanel>
+
+            <!-- 排序控件 -->
+            <StackPanel Grid.Column="2"
                 Orientation="Horizontal"
-                Margin="10"
-                HorizontalAlignment="Right">
-      <ComboBox x:Name="SortPropertyComboBox"
-                Header="排序属性"
-                SelectionChanged="SortPropertyComboBox_SelectionChanged"
-                MinWidth="120"
-                Margin="5,0">
-        <ComboBoxItem Content="加入时间"
-                      Tag="DateAdded"
-                      IsSelected="True"/>
-        <ComboBoxItem Content="文件大小"
-                      Tag="FileSize"/>
-        <ComboBoxItem Content="创建时间"
-                      Tag="CreationDate"/>
-        <ComboBoxItem Content="时长"
-                      Tag="Duration"/>
-      </ComboBox>
+                HorizontalAlignment="Right"
+                Margin="20,0,0,0">
+                <ComboBox x:Name="SortPropertyComboBox"
+                  Header="排序属性"
+                  SelectionChanged="SortPropertyComboBox_SelectionChanged"
+                  MinWidth="120"
+                  Margin="5,0">
+                    <ComboBoxItem Content="加入时间"
+                          Tag="DateAdded"
+                          IsSelected="True"/>
+                    <ComboBoxItem Content="文件大小"
+                          Tag="FileSize"/>
+                    <ComboBoxItem Content="创建时间"
+                          Tag="CreationDate"/>
+                    <ComboBoxItem Content="时长"
+                          Tag="Duration"/>
+                </ComboBox>
 
-      <ComboBox x:Name="SortOrderComboBox"
-                Header="排序方向"
-                SelectionChanged="SortOrderComboBox_SelectionChanged"
-                MinWidth="100"
-                Margin="5,0">
-        <ComboBoxItem Content="降序"
-                      Tag="DESC"
-                      IsSelected="True"/>
-        <ComboBoxItem Content="升序"
-                      Tag="ASC"/>
-      </ComboBox>
+                <ComboBox x:Name="SortOrderComboBox"
+                  Header="排序方向"
+                  SelectionChanged="SortOrderComboBox_SelectionChanged"
+                  MinWidth="100"
+                  Margin="5,0">
+                    <ComboBoxItem Content="降序"
+                          Tag="DESC"
+                          IsSelected="True"/>
+                    <ComboBoxItem Content="升序"
+                          Tag="ASC"/>
+                </ComboBox>
 
-      <Button Content="应用排序"
-              Click="ApplySortButton_Click"
-              Margin="10,0"
-              VerticalAlignment="Bottom"/>
-    </StackPanel>
-    <StackPanel Grid.Row="1"
+                <Button Content="应用排序"
+                Click="ApplySortButton_Click"
+                Margin="10,0"
+                VerticalAlignment="Bottom"/>
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Grid.Row="1"
                 Orientation="Horizontal"
                 HorizontalAlignment="Center"
                 Margin="10">
