@@ -23,7 +23,7 @@ namespace winui_local_movie
       _databaseService = ((App)Application.Current).DatabaseService;
 
       // 使用exe目录下的配置文件
-      _settingsFilePath = Path.Combine(AppContext.BaseDirectory, "app_settings.json");
+      _settingsFilePath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "app_settings.json");
 
       _directories = LoadDirectoriesFromSettings();
       DirectoriesListView.ItemsSource = _directories;
@@ -33,10 +33,9 @@ namespace winui_local_movie
     {
       try
       {
-        // 获取配置文件路径
-        var appDirectory = AppContext.BaseDirectory;
-        var configPath = Path.Combine(appDirectory);
-        ConfigPathText.Text = configPath;
+        // 显示 ApplicationData 目录路径
+        var appDataPath = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+        ConfigPathText.Text = appDataPath;
       }
       catch (Exception ex)
       {

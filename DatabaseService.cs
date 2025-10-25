@@ -14,9 +14,8 @@ namespace winui_local_movie
 
     public DatabaseService()
     {
-      var localFolder = AppContext.BaseDirectory;
+      var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
       var dbPath = Path.Combine(localFolder, "videos.db");
-
       // 确保目录存在
       Directory.CreateDirectory(Path.GetDirectoryName(dbPath));
 
