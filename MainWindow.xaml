@@ -20,8 +20,6 @@
       <StackPanel Orientation="Horizontal"
                   HorizontalAlignment="Left"
                   Spacing="8">
-        <Button Content="首页"
-                Click="GoHome_Click"/>
         <Button Content="所有视频"
                 Click="ShowAllVideos_Click"/>
       </StackPanel>
@@ -33,6 +31,7 @@
     <!-- 主内容区 -->
     <Frame x:Name="ContentFrame"
            Grid.Row="1"
+           Loaded="ContentFrame_Loaded"
            Margin="8"/>
   </Grid>
 </Window>

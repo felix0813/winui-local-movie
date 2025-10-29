@@ -7,6 +7,9 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace winui_local_movie
 {
@@ -51,9 +54,14 @@ namespace winui_local_movie
         try
         {
           var json = File.ReadAllText(_settingsFilePath);
-          var settings = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+          var options = new JsonSerializerOptions
+          {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver() // 与保存时保持一致
+          };
 
-          if (settings.ContainsKey("VideoDirectories") && settings["VideoDirectories"] != null)
+          var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(json, options);
+
+          if (settings != null && settings.ContainsKey("VideoDirectories") && settings["VideoDirectories"] != null)
           {
             var dirsJson = settings["VideoDirectories"].ToString();
             if (!string.IsNullOrEmpty(dirsJson))
@@ -62,9 +70,13 @@ namespace winui_local_movie
             }
           }
         }
-        catch
+        catch (Exception ex)
         {
-          // 如果读取或解析失败，返回空列表
+          System.Diagnostics.Debug.WriteLine($"加载目录设置失败: {ex.Message}");
+          DispatcherQueue.TryEnqueue(() =>
+          {
+            StatusText.Text = $"加载设置失败: {ex.Message}";
+          });
         }
       }
 
@@ -80,12 +92,22 @@ namespace winui_local_movie
           ["VideoDirectories"] = string.Join("|", _directories)
         };
 
-        var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        var options = new JsonSerializerOptions
+        {
+          WriteIndented = true,
+          TypeInfoResolver = new DefaultJsonTypeInfoResolver() // 显式指定解析器
+        };
+
+        var json = JsonSerializer.Serialize(settings, options);
         File.WriteAllText(_settingsFilePath, json);
       }
-      catch
+      catch (Exception ex)
       {
-        // 如果保存失败，静默处理
+        // 保存失败时更新状态文本，提示用户
+        DispatcherQueue.TryEnqueue(() =>
+        {
+          StatusText.Text = $"保存设置失败: {ex.Message}";
+        });
       }
     }
 

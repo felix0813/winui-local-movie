@@ -20,7 +20,7 @@ namespace winui_local_movie
       Directory.CreateDirectory(Path.GetDirectoryName(dbPath));
 
       _connectionString = $"Data Source={dbPath}";
-      InitializeDatabase();
+        InitializeDatabase();
     }
 
     private void InitializeDatabase()
@@ -43,32 +43,36 @@ namespace winui_local_movie
     CreationDate TEXT
     )";
       command.ExecuteNonQuery();
+            connection.Close();
     }
 
     // 在 DatabaseService.cs 中更新 AddVideoAsync 方法
-    public async Task AddVideoAsync(VideoModel video)
-    {
-      using var connection = new SqliteConnection(_connectionString);
-      await connection.OpenAsync();
+        public async Task AddVideoAsync(VideoModel video)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            await connection.OpenAsync();
 
-      var command = connection.CreateCommand();
-      command.CommandText = @"
-INSERT OR REPLACE INTO Videos 
-(Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate)
-VALUES (@Title, @FilePath, @ThumbnailPath, @Duration, @DateAdded, @IsFavorite, @IsWatchLater, @FileSize, @CreationDate)";
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+        INSERT INTO Videos 
+        (Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate)
+        SELECT @Title, @FilePath, @ThumbnailPath, @Duration, @DateAdded, @IsFavorite, @IsWatchLater, @FileSize, @CreationDate
+        WHERE NOT EXISTS (
+           SELECT 1 FROM Videos WHERE FilePath = @FilePath
+        )";
 
-      command.Parameters.AddWithValue("@FileSize", video.FileSize);
-      command.Parameters.AddWithValue("@Title", video.Title);
-      command.Parameters.AddWithValue("@FilePath", video.FilePath);
-      command.Parameters.AddWithValue("@ThumbnailPath", video.ThumbnailPath ?? "");
-      command.Parameters.AddWithValue("@Duration", video.Duration.ToString());
-      command.Parameters.AddWithValue("@DateAdded", video.DateAdded.ToString("o"));
-      command.Parameters.AddWithValue("@IsFavorite", video.IsFavorite ? 1 : 0);
-      command.Parameters.AddWithValue("@IsWatchLater", video.IsWatchLater ? 1 : 0);
-      command.Parameters.AddWithValue("@CreationDate", (object)video.CreationDate?.ToString("o") ?? DBNull.Value);
+            command.Parameters.AddWithValue("@FileSize", video.FileSize);
+            command.Parameters.AddWithValue("@Title", video.Title);
+            command.Parameters.AddWithValue("@FilePath", video.FilePath);
+            command.Parameters.AddWithValue("@ThumbnailPath", video.ThumbnailPath ?? "");
+            command.Parameters.AddWithValue("@Duration", video.Duration.ToString());
+            command.Parameters.AddWithValue("@DateAdded", video.DateAdded.ToString("o"));
+            command.Parameters.AddWithValue("@IsFavorite", video.IsFavorite ? 1 : 0);
+            command.Parameters.AddWithValue("@IsWatchLater", video.IsWatchLater ? 1 : 0);
+            command.Parameters.AddWithValue("@CreationDate", (object)video.CreationDate?.ToString("o") ?? DBNull.Value);
 
-      await command.ExecuteNonQueryAsync();
-    }
+            await command.ExecuteNonQueryAsync();
+        }
 
     public async Task<List<VideoModel>> GetFeaturedVideosAsync(int count = 6)
     {

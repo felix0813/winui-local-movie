@@ -32,11 +32,23 @@ namespace winui_local_movie
     public App()
     {
       this.InitializeComponent();
-      DatabaseService = new DatabaseService();
+
+      try
+      {
+        Batteries.Init();
+        // 添加更多初始化确保在Release模式下正常工作
+        SQLitePCL.raw.sqlite3_config(SQLitePCL.raw.SQLITE_CONFIG_MULTITHREAD);
+      }
+      catch (Exception ex)
+      {
+        // 处理初始化失败的情况
+        System.Diagnostics.Debug.WriteLine($"Database initialization failed: {ex.Message}");
+      }
     }
 
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+      DatabaseService ??= new DatabaseService();
       MainWindow = new MainWindow();
       MainWindow.Activate();
     }
