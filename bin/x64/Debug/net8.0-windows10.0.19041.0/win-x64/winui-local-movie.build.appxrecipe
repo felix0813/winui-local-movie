@@ -706,7 +706,7 @@
     <AppxPackagedFile Include="C:\Users\Administrator\.nuget\packages\microsoft.web.webview2\1.0.3179.45\lib_manual\net8.0-windows10.0.17763.0\Microsoft.Web.WebView2.Core.Projection.dll">
       <PackagePath>Microsoft.Web.WebView2.Core.Projection.dll</PackagePath>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Administrator\.nuget\packages\microsoft.windowsappsdk.ml\1.8.2095\lib\net6.0-windows10.0.17763.0\Microsoft.Windows.AI.MachineLearning.Projection.dll">
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Publish\win-x64\Microsoft.Windows.AI.MachineLearning.Projection.dll">
       <PackagePath>Microsoft.Windows.AI.MachineLearning.Projection.dll</PackagePath>
     </AppxPackagedFile>
     <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\winui-local-movie.deps.json">
@@ -715,20 +715,149 @@
     <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\LockScreenLogo.scale-200.png">
       <PackagePath>Assets\LockScreenLogo.scale-200.png</PackagePath>
     </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo1240.scale-100.png">
+      <PackagePath>Assets\Logo1240.scale-100.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo1240.scale-125.png">
+      <PackagePath>Assets\Logo1240.scale-125.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo1240.scale-150.png">
+      <PackagePath>Assets\Logo1240.scale-150.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo1240.scale-200.png">
+      <PackagePath>Assets\Logo1240.scale-200.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo1240.scale-400.png">
+      <PackagePath>Assets\Logo1240.scale-400.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo24.scale-100.png">
+      <PackagePath>Assets\Logo24.scale-100.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo24.scale-125.png">
+      <PackagePath>Assets\Logo24.scale-125.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo24.scale-150.png">
+      <PackagePath>Assets\Logo24.scale-150.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo24.scale-200.png">
+      <PackagePath>Assets\Logo24.scale-200.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo24.scale-400.png">
+      <PackagePath>Assets\Logo24.scale-400.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo284.scale-100.png">
+      <PackagePath>Assets\Logo284.scale-100.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo284.scale-125.png">
+      <PackagePath>Assets\Logo284.scale-125.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo284.scale-150.png">
+      <PackagePath>Assets\Logo284.scale-150.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo284.scale-200.png">
+      <PackagePath>Assets\Logo284.scale-200.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo284.scale-400.png">
+      <PackagePath>Assets\Logo284.scale-400.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo44x44.png">
+      <PackagePath>Assets\Logo44x44.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Logo88x88.png">
+      <PackagePath>Assets\Logo88x88.png</PackagePath>
+    </AppxPackagedFile>
     <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\SplashScreen.scale-200.png">
       <PackagePath>Assets\SplashScreen.scale-200.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square150x150Logo.scale-100.png">
+      <PackagePath>Assets\Square150x150Logo.scale-100.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square150x150Logo.scale-125.png">
+      <PackagePath>Assets\Square150x150Logo.scale-125.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square150x150Logo.scale-150.png">
+      <PackagePath>Assets\Square150x150Logo.scale-150.png</PackagePath>
     </AppxPackagedFile>
     <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square150x150Logo.scale-200.png">
       <PackagePath>Assets\Square150x150Logo.scale-200.png</PackagePath>
     </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square150x150Logo.scale-400.png">
+      <PackagePath>Assets\Square150x150Logo.scale-400.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.scale-100.png">
+      <PackagePath>Assets\Square44x44Logo.scale-100.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.scale-125.png">
+      <PackagePath>Assets\Square44x44Logo.scale-125.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.scale-150.png">
+      <PackagePath>Assets\Square44x44Logo.scale-150.png</PackagePath>
+    </AppxPackagedFile>
     <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.scale-200.png">
       <PackagePath>Assets\Square44x44Logo.scale-200.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.scale-400.png">
+      <PackagePath>Assets\Square44x44Logo.scale-400.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-16.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-16.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-16_altform-lightunplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-16_altform-lightunplated.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-16_altform-unplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-16_altform-unplated.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-24.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-24.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-24_altform-lightunplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-24_altform-lightunplated.png</PackagePath>
     </AppxPackagedFile>
     <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
       <PackagePath>Assets\Square44x44Logo.targetsize-24_altform-unplated.png</PackagePath>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\StoreLogo.png">
-      <PackagePath>Assets\StoreLogo.png</PackagePath>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-256.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-256.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-256_altform-lightunplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-256_altform-lightunplated.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-256_altform-unplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-256_altform-unplated.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-32.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-32.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-32_altform-lightunplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-32_altform-lightunplated.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-32_altform-unplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-32_altform-unplated.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-48.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-48.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-48_altform-lightunplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-48_altform-lightunplated.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Square44x44Logo.targetsize-48_altform-unplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-48_altform-unplated.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\StoreLogo.scale-100.png">
+      <PackagePath>Assets\StoreLogo.scale-100.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\StoreLogo.scale-125.png">
+      <PackagePath>Assets\StoreLogo.scale-125.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\StoreLogo.scale-150.png">
+      <PackagePath>Assets\StoreLogo.scale-150.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\StoreLogo.scale-200.png">
+      <PackagePath>Assets\StoreLogo.scale-200.png</PackagePath>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\StoreLogo.scale-400.png">
+      <PackagePath>Assets\StoreLogo.scale-400.png</PackagePath>
     </AppxPackagedFile>
     <AppxPackagedFile Include="G:\winui-local-movie\winui-local-movie\Assets\Wide310x150Logo.scale-200.png">
       <PackagePath>Assets\Wide310x150Logo.scale-200.png</PackagePath>
