@@ -158,22 +158,22 @@ namespace winui_local_movie
                  // 根据当前排序选项获取数据
           if (_currentSortProperty == "FileSize")
           {
-            videos = await _databaseService.GetVideosSortedByFileSizeAsync(!_isAscending,
+            videos = await _databaseService.GetVideosSortedByFileSizeAsync(_isAscending,
                 (_currentPage - 1) * PageSize, PageSize);
           }
           else if (_currentSortProperty == "CreationDate")
           {
-            videos = await _databaseService.GetVideosSortedByCreationDateAsync(!_isAscending,
+            videos = await _databaseService.GetVideosSortedByCreationDateAsync(_isAscending,
                 (_currentPage - 1) * PageSize, PageSize);
           }
           else if (_currentSortProperty == "Duration")
           {
-            videos = await _databaseService.GetVideosSortedByDurationAsync(!_isAscending,
+            videos = await _databaseService.GetVideosSortedByDurationAsync(_isAscending,
                 (_currentPage - 1) * PageSize, PageSize);
           }
           else
           {
-            videos = await _databaseService.GetVideosSortedByDateAddedAsync(!_isAscending,
+            videos = await _databaseService.GetVideosSortedByDateAddedAsync(_isAscending,
                 (_currentPage - 1) * PageSize, PageSize);
           }
 

@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 
 namespace winui_local_movie
 {
@@ -31,6 +32,7 @@ namespace winui_local_movie
       _directories = LoadDirectoriesFromSettings();
       DirectoriesListView.ItemsSource = _directories;
       ShowConfigFilePath();
+      ShowLastScanTime();
     }
     private void ShowConfigFilePath()
     {
@@ -45,72 +47,26 @@ namespace winui_local_movie
         ConfigPathText.Text = $"无法获取路径: {ex.Message}";
       }
     }
-    private List<string> LoadDirectoriesFromSettings()
-    {
-      var directories = new List<string>();
 
-      if (File.Exists(_settingsFilePath))
-      {
-        try
-        {
-          var json = File.ReadAllText(_settingsFilePath);
-          var options = new JsonSerializerOptions
-          {
-            TypeInfoResolver = new DefaultJsonTypeInfoResolver() // 与保存时保持一致
-          };
-
-          var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(json, options);
-
-          if (settings != null && settings.ContainsKey("VideoDirectories") && settings["VideoDirectories"] != null)
-          {
-            var dirsJson = settings["VideoDirectories"].ToString();
-            if (!string.IsNullOrEmpty(dirsJson))
-            {
-              directories.AddRange(dirsJson.Split('|'));
-            }
-          }
-        }
-        catch (Exception ex)
-        {
-          System.Diagnostics.Debug.WriteLine($"加载目录设置失败: {ex.Message}");
-          DispatcherQueue.TryEnqueue(() =>
-          {
-            StatusText.Text = $"加载设置失败: {ex.Message}";
-          });
-        }
-      }
-
-      return directories;
-    }
-
-    private void SaveDirectoriesToSettings()
+    private void ShowLastScanTime()
     {
       try
       {
-        var settings = new Dictionary<string, object>
+        var lastScanTime = GetLastScanTime();
+        if (lastScanTime != DateTime.MinValue)
         {
-          ["VideoDirectories"] = string.Join("|", _directories)
-        };
-
-        var options = new JsonSerializerOptions
+          LastScanTimeText.Text = lastScanTime.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+        else
         {
-          WriteIndented = true,
-          TypeInfoResolver = new DefaultJsonTypeInfoResolver() // 显式指定解析器
-        };
-
-        var json = JsonSerializer.Serialize(settings, options);
-        File.WriteAllText(_settingsFilePath, json);
+          LastScanTimeText.Text = "尚未扫描";
+        }
       }
       catch (Exception ex)
       {
-        // 保存失败时更新状态文本，提示用户
-        DispatcherQueue.TryEnqueue(() =>
-        {
-          StatusText.Text = $"保存设置失败: {ex.Message}";
-        });
+        LastScanTimeText.Text = $"无法获取扫描时间: {ex.Message}";
       }
     }
-
     private async void SelectDirectory_Click(object sender, RoutedEventArgs e)
     {
       var folderPicker = new FolderPicker();
@@ -196,45 +152,208 @@ namespace winui_local_movie
 
     private async Task<int> ScanVideosInBackgroundAsync()
     {
-      var videoExtensions = new[] { ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm" };
+      var videoExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"
+            };
       var scannedVideos = 0;
 
-      foreach (var directory in _directories)
-      {
-        if (!Directory.Exists(directory))
-        {
-          continue;
-        }
+      // 获取上次扫描时间
+      var lastScanTime = GetLastScanTime();
 
-        var files = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories)
-            .Where(file => videoExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()));
-
-        foreach (var file in files)
-        {
-          // 获取视频时长
-          var duration = await GetVideoDurationAsync(file);
-          var fileInfo = new FileInfo(file);
-          double fileSizeMB = Math.Round(fileInfo.Length / 1024.0 / 1024.0, 0);
-
-
-          var video = new VideoModel
+      var tasks = _directories
+          .Where(Directory.Exists)
+          .Select(directory => Task.Run(async () =>
           {
-            Title = Path.GetFileNameWithoutExtension(file),
-            FilePath = file,
-            DateAdded = DateTime.Now,
-            Duration = duration,  // 使用实际获取的时长
-            FileSize = (long)fileSizeMB,
-            CreationDate = fileInfo.CreationTime
-          };
+            var files = Directory.EnumerateFiles(directory, "*.*", SearchOption.AllDirectories)
+                      .Where(file => videoExtensions.Contains(Path.GetExtension(file)));
 
-          await _databaseService.AddVideoAsync(video);
-          scannedVideos++;
-        }
-      }
+            foreach (var file in files)
+            {
+              try
+              {
+                var fileInfo = new FileInfo(file);
+
+                // 仅处理新增或修改过的文件
+                if (fileInfo.LastWriteTime <= lastScanTime)
+                  continue;
+
+                var duration = await GetVideoDurationAsync(file);
+                double fileSizeMB = Math.Round(fileInfo.Length / 1024.0 / 1024.0, 0);
+
+                var video = new VideoModel
+                {
+                  Title = Path.GetFileNameWithoutExtension(file),
+                  FilePath = file,
+                  DateAdded = DateTime.Now,
+                  Duration = duration,
+                  FileSize = (long)fileSizeMB,
+                  CreationDate = fileInfo.CreationTime
+                };
+
+                await _databaseService.AddVideoAsync(video);
+                Interlocked.Increment(ref scannedVideos);
+              }
+              catch (Exception ex)
+              {
+                System.Diagnostics.Debug.WriteLine($"处理文件失败: {file}, 错误: {ex.Message}");
+              }
+            }
+          }));
+
+      await Task.WhenAll(tasks);
+
+      // 更新上次扫描时间
+      UpdateLastScanTime(DateTime.Now);
 
       return scannedVideos;
     }
+    private List<string> LoadDirectoriesFromSettings()
+    {
+      var directories = new List<string>();
 
+      if (File.Exists(_settingsFilePath))
+      {
+        try
+        {
+          var json = File.ReadAllText(_settingsFilePath);
+          var options = new JsonSerializerOptions
+          {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver() // 与保存时保持一致
+          };
+
+          var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(json, options);
+
+          if (settings != null && settings.ContainsKey("VideoDirectories") && settings["VideoDirectories"] != null)
+          {
+            var dirsJson = settings["VideoDirectories"].ToString();
+            if (!string.IsNullOrEmpty(dirsJson))
+            {
+              directories.AddRange(dirsJson.Split('|'));
+            }
+          }
+        }
+        catch (Exception ex)
+        {
+          System.Diagnostics.Debug.WriteLine($"加载目录设置失败: {ex.Message}");
+          DispatcherQueue.TryEnqueue(() =>
+          {
+            StatusText.Text = $"加载设置失败: {ex.Message}";
+          });
+        }
+      }
+
+      return directories;
+    }
+
+    private DateTime GetLastScanTime()
+    {
+
+      if (File.Exists(_settingsFilePath))
+      {
+        try
+        {
+          var json = File.ReadAllText(_settingsFilePath);
+          var options = new JsonSerializerOptions
+          {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver() // 与保存时保持一致
+          };
+
+          var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(json, options);
+
+          if (settings != null && settings.ContainsKey("LastScanTime") && settings["LastScanTime"] != null)
+          {
+            var dirsJson = settings["LastScanTime"].ToString();
+            if (!string.IsNullOrEmpty(dirsJson))
+            {
+              return DateTime.TryParse(dirsJson, out var lastScanTime) ? lastScanTime : DateTime.MinValue;
+            }
+          }
+        }
+        catch (Exception ex)
+        {
+          System.Diagnostics.Debug.WriteLine($"加载扫描时间失败: {ex.Message}");
+          DispatcherQueue.TryEnqueue(() =>
+          {
+            StatusText.Text = $"加载设置失败: {ex.Message}";
+          });
+        }
+      }
+
+      return DateTime.MinValue;
+    }
+
+    private void SaveDirectoriesToSettings()
+    {
+      try
+      {
+        var settings = LoadExistingSettings();
+        settings["VideoDirectories"] = string.Join("|", _directories);
+
+        var options = new JsonSerializerOptions
+        {
+          WriteIndented = true,
+          TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        };
+
+        var json = JsonSerializer.Serialize(settings, options);
+        File.WriteAllText(_settingsFilePath, json);
+      }
+      catch (Exception ex)
+      {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+          StatusText.Text = $"保存设置失败: {ex.Message}";
+        });
+      }
+    }
+
+    private void UpdateLastScanTime(DateTime lastScanTime)
+    {
+      try
+      {
+        var settings = LoadExistingSettings();
+        settings["LastScanTime"] = lastScanTime.ToString("o");
+
+        var options = new JsonSerializerOptions
+        {
+          WriteIndented = true,
+          TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        };
+
+        var json = JsonSerializer.Serialize(settings, options);
+        File.WriteAllText(_settingsFilePath, json);
+        ShowLastScanTime();
+      }
+      catch (Exception ex)
+      {
+        System.Diagnostics.Debug.WriteLine($"更新上次扫描时间失败: {ex.Message}");
+      }
+    }
+
+    private Dictionary<string, object> LoadExistingSettings()
+    {
+      if (File.Exists(_settingsFilePath))
+      {
+        try
+        {
+          var json = File.ReadAllText(_settingsFilePath);
+          var options = new JsonSerializerOptions
+          {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+          };
+
+          var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(json, options);
+          return settings ?? new Dictionary<string, object>();
+        }
+        catch (Exception ex)
+        {
+          System.Diagnostics.Debug.WriteLine($"加载现有设置失败: {ex.Message}");
+        }
+      }
+
+      return new Dictionary<string, object>();
+    }
     private async Task<TimeSpan> GetVideoDurationAsync(string filePath)
     {
       try
@@ -248,5 +367,6 @@ namespace winui_local_movie
         return TimeSpan.Zero; // 如果无法获取时长，返回默认值  
       }
     }
+
   }
 }

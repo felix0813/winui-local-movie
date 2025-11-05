@@ -55,7 +55,13 @@
         <Button Content="扫描视频"
                 Click="ScanVideos_Click"/>
       </StackPanel>
-
+      <TextBlock Text="上次扫描时间"
+                 Style="{ThemeResource SubtitleTextBlockStyle}"
+                 Margin="0,12,0,0"/>
+      <TextBlock x:Name="LastScanTimeText"
+                 Text="尚未扫描"
+                 FontStyle="Italic"
+                 TextWrapping="Wrap"/>
       <ProgressBar x:Name="ScanProgressBar"
                    IsIndeterminate="False"
                    Visibility="Collapsed"/>
