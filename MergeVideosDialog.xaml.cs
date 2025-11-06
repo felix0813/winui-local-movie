@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
@@ -12,13 +14,25 @@ namespace winui_local_movie
 {
   public sealed partial class MergeVideosDialog : ContentDialog
   {
+    private CancellationTokenSource _cancellationTokenSource;
+    private bool _isMerging = false;
     public MergeVideosDialog()
     {
       this.InitializeComponent();
+      this.Closing += MergeVideosDialog_Closing;
     }
 
-    private async void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
+      // 清除之前的错误消息
+      ClearErrorMessage();
+      // 如果正在合并，则阻止再次点击
+      if (_isMerging)
+      {
+        args.Cancel = true;
+        return;
+      }
+
       // 验证输入
       if (string.IsNullOrWhiteSpace(OutputNameTextBox.Text))
       {
@@ -28,12 +42,12 @@ namespace winui_local_movie
       }
 
       var videoPaths = new List<string>
-            {
-                VideoPath1TextBox.Text,
-                VideoPath2TextBox.Text,
-                VideoPath3TextBox.Text,
-                VideoPath4TextBox.Text
-            }.Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
+    {
+        VideoPath1TextBox.Text,
+        VideoPath2TextBox.Text,
+        VideoPath3TextBox.Text,
+        VideoPath4TextBox.Text
+    }.Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
 
       if (videoPaths.Count < 2)
       {
@@ -56,7 +70,31 @@ namespace winui_local_movie
       try
       {
         // 合并视频逻辑
-        await MergeVideos(videoPaths, OutputNameTextBox.Text);
+        args.Cancel = true; // 阻止默认关闭行为
+
+        // 先在UI线程上初始化UI状态
+        MergeProgressBar.Visibility = Visibility.Visible;
+        MergeProgressBar.IsIndeterminate = true;
+        var outputPath = OutputNameTextBox.Text;
+        // 然后启动后台任务
+        _ = Task.Run(async () =>
+        {
+          try
+          {
+            await MergeVideos(videoPaths, outputPath);
+          }
+          catch (Exception ex)
+          {
+            Debug.WriteLine($"Task exception: {ex.GetType().Name} - {ex.Message}");
+            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+            // 在UI线程上显示错误
+            DispatcherQueue.TryEnqueue(() =>
+        {
+          ShowErrorMessage($"合并失败: {ex.Message}");
+        });
+          }
+        });
       }
       catch (Exception ex)
       {
@@ -65,28 +103,84 @@ namespace winui_local_movie
       }
     }
 
-    private async void ShowErrorMessage(string message)
+    private void ShowErrorMessage(string message)
     {
-      var dialog = new ContentDialog
+      DispatcherQueue.TryEnqueue(() =>
       {
-        Title = "错误",
+        ErrorMessageTextBlock.Text = message;
+        ErrorMessageTextBlock.Visibility = Visibility.Visible;
+      });
+    }
+
+    // 清除错误消息的方法
+    private void ClearErrorMessage()
+    {
+      DispatcherQueue.TryEnqueue(() =>
+      {
+        ErrorMessageTextBlock.Visibility = Visibility.Collapsed;
+        ErrorMessageTextBlock.Text = string.Empty;
+      });
+    }
+    // 替换原来的 OnClosing 方法为如下内容：
+    private void MergeVideosDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
+    {
+      // 如果正在合并，则取消合并
+      if (_isMerging && _cancellationTokenSource != null)
+      {
+        _cancellationTokenSource.Cancel();
+        args.Cancel = true; // 暂时取消关闭，等待合并取消完成
+
+        // 在后台等待取消完成后再关闭对话框
+        Task.Run(async () =>
+        {
+          await Task.Delay(500); // 给一点时间让取消生效
+          DispatcherQueue.TryEnqueue(() =>
+{
+  Hide(); // 手动隐藏对话框
+});
+        });
+      }
+    }
+    private async Task ShowSuccessMessage(string message)
+    {
+      var successDialog = new ContentDialog
+      {
+        Title = "成功",
         Content = message,
         CloseButtonText = "确定",
         XamlRoot = this.XamlRoot
       };
-      await dialog.ShowAsync();
+      await successDialog.ShowAsync();
     }
-
-    private async System.Threading.Tasks.Task MergeVideos(List<string> videoPaths, string outputName)
+    private async Task MergeVideos(List<string> videoPaths, string outputName)
     {
-      // 获取第一个视频的目录作为输出目录
+      // 设置合并状态
+      _isMerging = true;
+
+      DispatcherQueue.TryEnqueue(() =>
+   {
+     // 初始化进度控件
+     MergeProgressBar.Visibility = Visibility.Visible;
+     MergeProgressBar.Value = 0;
+     CancelButton.Visibility = Visibility.Visible;
+
+     // 禁用主按钮防止重复点击
+     this.IsPrimaryButtonEnabled = false;
+     this.IsSecondaryButtonEnabled = false;
+     ClearErrorMessage();
+   });
+
+
+      // 创建取消令牌
+      _cancellationTokenSource = new CancellationTokenSource();
+
       string firstVideoDirectory = Path.GetDirectoryName(videoPaths[0]);
       string outputFilePath = Path.Combine(firstVideoDirectory, $"{outputName}.mp4");
 
       try
       {
         // 使用FFmpeg合并视频（需要先安装FFmpeg）
-        await MergeVideosWithFFmpeg(videoPaths, outputFilePath);
+        await MergeVideosWithFFmpeg(videoPaths, outputFilePath, _cancellationTokenSource.Token);
 
         // 删除原始文件
         foreach (var path in videoPaths)
@@ -98,7 +192,7 @@ namespace winui_local_movie
           catch (Exception ex)
           {
             // 记录删除失败的日志，但不中断流程
-            System.Diagnostics.Debug.WriteLine($"Failed to delete file {path}: {ex.Message}");
+            Debug.WriteLine($"Failed to delete file {path}: {ex.Message}");
           }
         }
 
@@ -106,33 +200,52 @@ namespace winui_local_movie
         await InsertVideoToDatabase(outputFilePath, outputName);
 
         // 显示成功消息
-        var successDialog = new ContentDialog
+        DispatcherQueue.TryEnqueue(async () =>
+      {
+        this.Hide();
+      });
+        await ShowSuccessMessage($"视频已合并并保存到: {outputFilePath}");
+      }
+      catch (OperationCanceledException ex)
+      {
+        // 用户取消操作
+        DispatcherQueue.TryEnqueue(() =>
         {
-          Title = "成功",
-          Content = $"视频已合并并保存到: {outputFilePath}",
-          CloseButtonText = "确定",
-          XamlRoot = this.XamlRoot
-        };
-        await successDialog.ShowAsync();
+          ShowErrorMessage($"视频合并过程中取消: {ex.Message}");
+        });
       }
       catch (Exception ex)
       {
-        // 处理合并过程中的错误
-        var errorDialog = new ContentDialog
+        DispatcherQueue.TryEnqueue(() =>
         {
-          Title = "合并失败",
-          Content = $"视频合并过程中发生错误: {ex.Message}",
-          CloseButtonText = "确定",
-          XamlRoot = this.XamlRoot
-        };
-        await errorDialog.ShowAsync();
+          ShowErrorMessage($"视频合并过程中发生错误: {ex.Message}");
+        });
+      }
+      finally
+      {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+          // 重置合并状态
+          _isMerging = false;
+
+          // 隐藏进度控件
+          MergeProgressBar.Visibility = Visibility.Collapsed;
+          CancelButton.Visibility = Visibility.Collapsed;
+
+          // 恢复按钮状态
+          this.IsPrimaryButtonEnabled = true;
+          this.IsSecondaryButtonEnabled = true;
+        });
+
+
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
       }
     }
-
-    private async System.Threading.Tasks.Task MergeVideosWithFFmpeg(List<string> videoPaths, string outputFilePath)
+    private async Task MergeVideosWithFFmpeg(List<string> videoPaths, string outputFilePath, CancellationToken cancellationToken)
     {
-      // 创建临时文件列表用于FFmpeg concat协议
       string tempFileListPath = Path.GetTempFileName();
+      Process process = null;
 
       try
       {
@@ -159,24 +272,46 @@ namespace winui_local_movie
           CreateNoWindow = true
         };
 
-        using (var process = Process.Start(processInfo))
-        {
-          if (process != null)
-          {
-            // 等待进程完成
-            await process.WaitForExitAsync();
+        process = new Process();
+        process.StartInfo = processInfo;
+        process.EnableRaisingEvents = true;
 
-            // 检查是否执行成功
-            if (process.ExitCode != 0)
-            {
-              string errorOutput = await process.StandardError.ReadToEndAsync();
-              throw new Exception($"FFmpeg执行失败: {errorOutput}");
-            }
-          }
-          else
+        // 启动进程
+        if (process.Start())
+        {
+          // 异步读取标准错误输出以获取进度信息
+          string errorOutput = await process.StandardError.ReadToEndAsync();
+
+          // 等待进程完成或被取消
+          while (!process.HasExited)
           {
-            throw new Exception("无法启动FFmpeg进程");
+            // 检查是否请求了取消
+            if (cancellationToken.IsCancellationRequested)
+            {
+              try
+              {
+                process.Kill();
+              }
+              catch
+              {
+                // 忽略杀死进程时的异常
+              }
+
+              throw new OperationCanceledException(cancellationToken);
+            }
+
+            await Task.Delay(100); // 短暂延迟避免过度占用CPU
           }
+
+          // 检查是否执行成功
+          if (process.ExitCode != 0)
+          {
+            throw new Exception($"FFmpeg执行失败: {errorOutput}");
+          }
+        }
+        else
+        {
+          throw new Exception("无法启动FFmpeg进程");
         }
       }
       finally
@@ -193,7 +328,13 @@ namespace winui_local_movie
             // 忽略清理失败
           }
         }
+
+        process?.Dispose();
       }
+    }
+    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    {
+      _cancellationTokenSource?.Cancel();
     }
 
     private async System.Threading.Tasks.Task InsertVideoToDatabase(string filePath, string title)
