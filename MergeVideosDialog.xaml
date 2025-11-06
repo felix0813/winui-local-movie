@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="winui_local_movie.MergeVideosDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="合并视频"
+    PrimaryButtonText="确认"
+    CloseButtonText="取消"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick">
+
+    <ScrollViewer>
+        <StackPanel VerticalAlignment="Stretch" 
+                    HorizontalAlignment="Stretch"
+                    Spacing="12">
+            <TextBox x:Name="OutputNameTextBox"
+                     Header="合并后的视频名称"
+                     PlaceholderText="请输入合并后的视频名称"/>
+
+            <TextBox x:Name="VideoPath1TextBox"
+                     Header="视频1路径"
+                     PlaceholderText="请输入第一个视频的绝对路径"/>
+
+            <TextBox x:Name="VideoPath2TextBox"
+                     Header="视频2路径"
+                     PlaceholderText="请输入第二个视频的绝对路径"/>
+
+            <TextBox x:Name="VideoPath3TextBox"
+                     Header="视频3路径"
+                     PlaceholderText="请输入第三个视频的绝对路径"/>
+
+            <TextBox x:Name="VideoPath4TextBox"
+                     Header="视频4路径"
+                     PlaceholderText="请输入第四个视频的绝对路径"/>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

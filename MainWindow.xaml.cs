@@ -11,7 +11,7 @@ namespace winui_local_movie
     public MainWindow()
     {
       this.InitializeComponent();
-        }
+    }
     private void ContentFrame_Loaded(object sender, RoutedEventArgs e)
     {
       ContentFrame.Navigate(typeof(AllVideosPage));
@@ -25,6 +25,9 @@ namespace winui_local_movie
     {
       ContentFrame.Navigate(typeof(AllVideosPage));
     }
-
+    private void Toolbox_Click(object sender, RoutedEventArgs e)
+    {
+      ContentFrame.Navigate(typeof(ToolboxPage));
+    }
   }
 }

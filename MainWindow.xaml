@@ -23,9 +23,14 @@
         <Button Content="所有视频"
                 Click="ShowAllVideos_Click"/>
       </StackPanel>
-      <Button Content="设置"
-              Click="Settings_Click"
-              HorizontalAlignment="Right"/>
+      <StackPanel Orientation="Horizontal"
+                  HorizontalAlignment="Right"
+                  Spacing="8">
+        <Button Content="工具箱"
+                Click="Toolbox_Click"/>
+        <Button Content="设置"
+                Click="Settings_Click"/>
+      </StackPanel>
     </Grid>
 
     <!-- 主内容区 -->
