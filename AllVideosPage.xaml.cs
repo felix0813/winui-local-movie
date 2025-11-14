@@ -1,3 +1,5 @@
+using Microsoft.UI;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -40,25 +42,25 @@ namespace winui_local_movie
       VideosGridView.ContainerContentChanging += VideosGridView_ContainerContentChanging;
 
     }
-        // 容器内容更改事件处理
-        private void VideosGridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            if (args.ItemContainer is GridViewItem itemContainer && args.Item is VideoModel)
-            {
-                // 更新容器的选中状态样式
-                UpdateContainerSelectionStyle(itemContainer);
+    // 容器内容更改事件处理
+    private void VideosGridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+      if (args.ItemContainer is GridViewItem itemContainer && args.Item is VideoModel)
+      {
+        // 更新容器的选中状态样式
+        UpdateContainerSelectionStyle(itemContainer);
 
-                // 监听选择状态变化
-                itemContainer.RegisterPropertyChangedCallback(GridViewItem.IsSelectedProperty, (s, e) =>
-                {
-                    if (s is GridViewItem gridViewItem)
-                    {
-                        UpdateContainerSelectionStyle(gridViewItem);
-                    }
-                });
-            }
-        }
-        private void UpdateContainerSelectionStyle(GridViewItem item)
+        // 监听选择状态变化
+        itemContainer.RegisterPropertyChangedCallback(GridViewItem.IsSelectedProperty, (s, e) =>
+        {
+          if (s is GridViewItem gridViewItem)
+          {
+            UpdateContainerSelectionStyle(gridViewItem);
+          }
+        });
+      }
+    }
+    private void UpdateContainerSelectionStyle(GridViewItem item)
     {
       if (item.IsSelected)
       {
@@ -447,24 +449,83 @@ namespace winui_local_movie
     }
 
 
-    // 详情页按钮点击事件 (TODO)
-    private void DetailsButton_Click(object sender, RoutedEventArgs e)
+    // 在 AllVideosPage.xaml.cs 类中添加以下方法
+
+    private async void DetailsButton_Click(object sender, RoutedEventArgs e)
     {
       var button = sender as Button;
       if (button?.Tag is VideoModel video)
       {
-        // TODO: 导航到详情页
-        NavigateToDetailsPage(video);
+        await ShowVideoDetailsDialog(video);
       }
     }
 
-    // TODO: 导航到详情页的方法
-    private void NavigateToDetailsPage(VideoModel video)
+    private async Task ShowVideoDetailsDialog(VideoModel video)
     {
-      // TODO: 实现导航到详情页的逻辑
-      // 示例: Frame.Navigate(typeof(VideoDetailsPage), video.Id);
+      // 创建弹窗内容
+      var stackPanel = new StackPanel();
+      // 添加视频信息
+      AddDetailRow(stackPanel, "标题:", video.Title);
+      AddDetailRow(stackPanel, "文件路径:", video.FilePath);
+      AddDetailRow(stackPanel, "时长:", video.FormatDuration(video.Duration));
+      AddDetailRow(stackPanel, "文件大小:", $"{video.FileSize} MB");
+      AddDetailRow(stackPanel, "创建日期:", video.CreationDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A");
+      AddDetailRow(stackPanel, "加入时间:", video.DateAdded.ToString("yyyy-MM-dd HH:mm:ss"));
+      AddDetailRow(stackPanel, "收藏状态:", video.IsFavorite ? "是" : "否");
+      AddDetailRow(stackPanel, "稍后观看:", video.IsWatchLater ? "是" : "否");
+
+      // 创建并配置弹窗
+      var dialog = new ContentDialog
+      {
+        Title = "详细信息",
+        Content = new ScrollViewer
+        {
+          Content = stackPanel,
+          Padding = new Thickness(10),
+          MaxHeight = 500
+        },
+        CloseButtonText = "关闭",
+        XamlRoot = this.Content.XamlRoot
+      };
+
+      await dialog.ShowAsync();
     }
 
+    private void AddDetailRow(StackPanel parent, string label, string value)
+{
+    var row = new Grid();
+    row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+    row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+    var labelBlock = new TextBlock
+    {
+        Text = label,
+        FontWeight = FontWeights.Bold,
+        Margin = new Thickness(0, 0, 10, 0),
+        IsTextSelectionEnabled = true  // 允许选择标签文本
+    };
+
+    var valueBlock = new TextBlock
+    {
+        Text = value ?? "N/A",
+        TextWrapping = TextWrapping.Wrap,
+        IsTextSelectionEnabled = true  // 允许选择值文本
+    };
+
+    Grid.SetColumn(labelBlock, 0);
+    Grid.SetColumn(valueBlock, 1);
+
+    row.Children.Add(labelBlock);
+    row.Children.Add(valueBlock);
+
+    parent.Children.Add(row);
+    parent.Children.Add(new Border
+    {
+        BorderBrush = new SolidColorBrush(Colors.LightGray),
+        BorderThickness = new Thickness(0, 0, 0, 1),
+        Margin = new Thickness(0, 5, 0, 5)
+    });
+}
     // 播放视频方法
     private async Task PlayVideoAsync(VideoModel video)
     {

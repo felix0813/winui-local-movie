@@ -118,7 +118,7 @@
         <DataTemplate x:DataType="local:VideoModel">
           <StackPanel Width="220"
                       Margin="5"
-              Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+                      Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
 
             <!-- 上方缩略图区域 -->
             <Border Background="LightGray"
