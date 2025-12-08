@@ -563,5 +563,64 @@ namespace winui_local_movie
 
       return videos;
     }
+    public async Task<List<VideoModel>> SearchVideosAsync(string searchTerm, int offset = 0, int limit = 0)
+    {
+      var videos = new List<VideoModel>();
+      var limitClause = limit > 0 ? "LIMIT @Limit OFFSET @Offset" : "";
+
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = $@"
+        SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate
+        FROM Videos 
+        WHERE Title LIKE @SearchTerm OR FilePath LIKE @SearchTerm
+        ORDER BY DateAdded DESC 
+        {limitClause}";
+
+      command.Parameters.AddWithValue("@SearchTerm", $"%{searchTerm}%");
+      if (limit > 0)
+      {
+        command.Parameters.AddWithValue("@Limit", limit);
+        command.Parameters.AddWithValue("@Offset", offset);
+      }
+
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync())
+      {
+        videos.Add(new VideoModel
+        {
+          Id = reader.GetInt32("Id"),
+          Title = reader.GetString("Title"),
+          FilePath = reader.GetString("FilePath"),
+          ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
+          Duration = TimeSpan.Parse(reader.GetString("Duration")),
+          DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
+          IsFavorite = reader.GetInt32("IsFavorite") == 1,
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
+          FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
+          CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+        });
+      }
+
+      return videos;
+    }
+    public async Task<int> GetSearchVideosCountAsync(string searchTerm)
+{
+    using var connection = new SqliteConnection(_connectionString);
+    await connection.OpenAsync();
+
+    var command = connection.CreateCommand();
+    command.CommandText = @"
+        SELECT COUNT(*) 
+        FROM Videos 
+        WHERE Title LIKE @SearchTerm OR FilePath LIKE @SearchTerm";
+    
+    command.Parameters.AddWithValue("@SearchTerm", $"%{searchTerm}%");
+
+    var result = await command.ExecuteScalarAsync();
+    return Convert.ToInt32(result);
+}
   }
 }

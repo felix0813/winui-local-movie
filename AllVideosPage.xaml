@@ -55,7 +55,21 @@
                 Visibility="Collapsed"
                 Margin="5,0"/>
       </StackPanel>
-
+      <!-- 在现有导航按钮 StackPanel 后面添加 -->
+      <StackPanel Grid.Column="1"
+                  Orientation="Horizontal"
+                  HorizontalAlignment="Center">
+        <AutoSuggestBox x:Name="SearchBox"
+                        PlaceholderText="搜索视频..."
+                        QueryIcon="Find"
+                        Width="300"
+                        Height="32"
+                        MinWidth="200"
+                        TextChanged="SearchBox_TextChanged"
+                        QuerySubmitted="SearchBox_QuerySubmitted"
+                        Margin="10,0"
+                        VerticalAlignment="Center"/>
+      </StackPanel>
       <!-- 排序控件 -->
       <StackPanel Grid.Column="2"
                   Orientation="Horizontal"

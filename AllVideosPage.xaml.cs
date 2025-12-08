@@ -81,6 +81,11 @@ namespace winui_local_movie
       var button = sender as Button;
       var tag = button.Tag.ToString();
 
+      // 清除搜索状态
+      isSearching = false;
+      currentSearchTerm = "";
+      SearchBox.Text = "";
+
       // 更新当前视图模式
       switch (tag)
       {
@@ -132,6 +137,7 @@ namespace winui_local_movie
 
     // AllVideosPage.xaml.cs
 
+    // 修改 LoadVideosAsync 方法以支持搜索
     private async Task LoadVideosAsync()
     {
       if (_isMultiSelectMode)
@@ -140,57 +146,70 @@ namespace winui_local_movie
       List<VideoModel> videos = new List<VideoModel>();
       int totalCount = 0;
 
-      switch (currentViewMode)
+      if (isSearching)
       {
-        case ViewMode.Favorites:
-          videos = await _databaseService.GetFavoriteVideosSortedAsync(
-              _currentSortProperty,
-              _isAscending,
-              (_currentPage - 1) * PageSize,
-              PageSize);
-          totalCount = await _databaseService.GetFavoriteVideosAsync().ContinueWith(t => t.Result.Count); // 或者添加一个专门计数的方法
-          VideosGridView.ItemsSource = videos;
-          break;
+        // 使用搜索功能
+        videos = await _databaseService.SearchVideosAsync(
+            currentSearchTerm,
+            (_currentPage - 1) * PageSize,
+            PageSize);
 
-        case ViewMode.WatchLater:
-          videos = await _databaseService.GetWatchLaterVideosSortedAsync(
-              _currentSortProperty,
-              _isAscending,
-              (_currentPage - 1) * PageSize,
-              PageSize);
-          totalCount = await _databaseService.GetWatchLaterVideosAsync().ContinueWith(t => t.Result.Count); // 同上
-          VideosGridView.ItemsSource = videos;
-          break;
+        totalCount = await _databaseService.GetSearchVideosCountAsync(currentSearchTerm);
+      }
+      else
+      {
+        // 原有的过滤和排序逻辑
+        switch (currentViewMode)
+        {
+          case ViewMode.Favorites:
+            videos = await _databaseService.GetFavoriteVideosSortedAsync(
+                _currentSortProperty,
+                _isAscending,
+                (_currentPage - 1) * PageSize,
+                PageSize);
+            totalCount = await _databaseService.GetFavoriteVideosAsync().ContinueWith(t => t.Result.Count);
+            break;
 
-        default: // ViewMode.All
-                 // 根据当前排序选项获取数据
-          if (_currentSortProperty == "FileSize")
-          {
-            videos = await _databaseService.GetVideosSortedByFileSizeAsync(_isAscending,
-                (_currentPage - 1) * PageSize, PageSize);
-          }
-          else if (_currentSortProperty == "CreationDate")
-          {
-            videos = await _databaseService.GetVideosSortedByCreationDateAsync(_isAscending,
-                (_currentPage - 1) * PageSize, PageSize);
-          }
-          else if (_currentSortProperty == "Duration")
-          {
-            videos = await _databaseService.GetVideosSortedByDurationAsync(_isAscending,
-                (_currentPage - 1) * PageSize, PageSize);
-          }
-          else
-          {
-            videos = await _databaseService.GetVideosSortedByDateAddedAsync(_isAscending,
-                (_currentPage - 1) * PageSize, PageSize);
-          }
+          case ViewMode.WatchLater:
+            videos = await _databaseService.GetWatchLaterVideosSortedAsync(
+                _currentSortProperty,
+                _isAscending,
+                (_currentPage - 1) * PageSize,
+                PageSize);
+            totalCount = await _databaseService.GetWatchLaterVideosAsync().ContinueWith(t => t.Result.Count);
+            break;
 
-          VideosGridView.ItemsSource = videos;
-          totalCount = await _databaseService.GetTotalVideosCountAsync();
-          break;
+          default: // ViewMode.All
+                   // 根据当前排序选项获取数据
+            if (_currentSortProperty == "FileSize")
+            {
+              videos = await _databaseService.GetVideosSortedByFileSizeAsync(_isAscending,
+                  (_currentPage - 1) * PageSize, PageSize);
+            }
+            else if (_currentSortProperty == "CreationDate")
+            {
+              videos = await _databaseService.GetVideosSortedByCreationDateAsync(_isAscending,
+                  (_currentPage - 1) * PageSize, PageSize);
+            }
+            else if (_currentSortProperty == "Duration")
+            {
+              videos = await _databaseService.GetVideosSortedByDurationAsync(_isAscending,
+                  (_currentPage - 1) * PageSize, PageSize);
+            }
+            else
+            {
+              videos = await _databaseService.GetVideosSortedByDateAddedAsync(_isAscending,
+                  (_currentPage - 1) * PageSize, PageSize);
+            }
+
+            totalCount = await _databaseService.GetTotalVideosCountAsync();
+            break;
+        }
       }
 
+      VideosGridView.ItemsSource = videos;
       _totalVideos = totalCount;
+
       // 更新分页信息
       int totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
       PageInfoText.Text = $"第 {_currentPage} 页，共 {totalPages} 页";
@@ -199,7 +218,6 @@ namespace winui_local_movie
       PreviousPageButton.IsEnabled = _currentPage > 1;
       NextPageButton.IsEnabled = _currentPage < totalPages;
     }
-
     private void PreviousPageButton_Click(object sender, RoutedEventArgs e)
     {
       if (_currentPage > 1)
@@ -859,6 +877,37 @@ namespace winui_local_movie
       catch (Exception ex)
       {
         await ShowErrorDialog($"批量刷新元数据失败: {ex.Message}");
+      }
+    }
+    private string currentSearchTerm = "";
+    private bool isSearching = false;
+
+    // 搜索框文本变化事件处理
+    private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    {
+      if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+      {
+        // 可以在这里实现自动建议功能
+        // 这里我们简化处理，只在提交时搜索
+      }
+    }
+
+    // 搜索查询提交事件处理
+    private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+      if (!string.IsNullOrWhiteSpace(args.QueryText))
+      {
+        currentSearchTerm = args.QueryText;
+        isSearching = true;
+        _currentPage = 1; // 重置到第一页
+        await LoadVideosAsync();
+      }
+      else
+      {
+        // 如果搜索词为空，则显示所有视频
+        isSearching = false;
+        _currentPage = 1;
+        await LoadVideosAsync();
       }
     }
   }
