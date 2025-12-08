@@ -3,7 +3,6 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -129,7 +128,10 @@ namespace winui_local_movie
     }
 
 
-    // 修改 LoadVideosAsync 方法以支持排序
+
+
+    // AllVideosPage.xaml.cs
+
     private async Task LoadVideosAsync()
     {
       if (_isMultiSelectMode)
@@ -141,19 +143,23 @@ namespace winui_local_movie
       switch (currentViewMode)
       {
         case ViewMode.Favorites:
-          videos = await _databaseService.GetFavoriteVideosAsync();
-          totalCount = videos.Count;
-          // 应用分页
-          var favoritePageVideos = videos.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
-          VideosGridView.ItemsSource = favoritePageVideos;
+          videos = await _databaseService.GetFavoriteVideosSortedAsync(
+              _currentSortProperty,
+              _isAscending,
+              (_currentPage - 1) * PageSize,
+              PageSize);
+          totalCount = await _databaseService.GetFavoriteVideosAsync().ContinueWith(t => t.Result.Count); // 或者添加一个专门计数的方法
+          VideosGridView.ItemsSource = videos;
           break;
 
         case ViewMode.WatchLater:
-          videos = await _databaseService.GetWatchLaterVideosAsync();
-          totalCount = videos.Count;
-          // 应用分页
-          var watchLaterPageVideos = videos.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
-          VideosGridView.ItemsSource = watchLaterPageVideos;
+          videos = await _databaseService.GetWatchLaterVideosSortedAsync(
+              _currentSortProperty,
+              _isAscending,
+              (_currentPage - 1) * PageSize,
+              PageSize);
+          totalCount = await _databaseService.GetWatchLaterVideosAsync().ContinueWith(t => t.Result.Count); // 同上
+          VideosGridView.ItemsSource = videos;
           break;
 
         default: // ViewMode.All
@@ -183,6 +189,7 @@ namespace winui_local_movie
           totalCount = await _databaseService.GetTotalVideosCountAsync();
           break;
       }
+
       _totalVideos = totalCount;
       // 更新分页信息
       int totalPages = (int)Math.Ceiling((double)totalCount / PageSize);
@@ -492,40 +499,40 @@ namespace winui_local_movie
     }
 
     private void AddDetailRow(StackPanel parent, string label, string value)
-{
-    var row = new Grid();
-    row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-    row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-    var labelBlock = new TextBlock
     {
+      var row = new Grid();
+      row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+      row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+      var labelBlock = new TextBlock
+      {
         Text = label,
         FontWeight = FontWeights.Bold,
         Margin = new Thickness(0, 0, 10, 0),
         IsTextSelectionEnabled = true  // 允许选择标签文本
-    };
+      };
 
-    var valueBlock = new TextBlock
-    {
+      var valueBlock = new TextBlock
+      {
         Text = value ?? "N/A",
         TextWrapping = TextWrapping.Wrap,
         IsTextSelectionEnabled = true  // 允许选择值文本
-    };
+      };
 
-    Grid.SetColumn(labelBlock, 0);
-    Grid.SetColumn(valueBlock, 1);
+      Grid.SetColumn(labelBlock, 0);
+      Grid.SetColumn(valueBlock, 1);
 
-    row.Children.Add(labelBlock);
-    row.Children.Add(valueBlock);
+      row.Children.Add(labelBlock);
+      row.Children.Add(valueBlock);
 
-    parent.Children.Add(row);
-    parent.Children.Add(new Border
-    {
+      parent.Children.Add(row);
+      parent.Children.Add(new Border
+      {
         BorderBrush = new SolidColorBrush(Colors.LightGray),
         BorderThickness = new Thickness(0, 0, 0, 1),
         Margin = new Thickness(0, 5, 0, 5)
-    });
-}
+      });
+    }
     // 播放视频方法
     private async Task PlayVideoAsync(VideoModel video)
     {
