@@ -268,7 +268,8 @@ namespace winui_local_movie
             return true;
           }
 
-          File.SetAttributes(path, FileAttributes.Normal);
+          // 将 FileAttributes 明确限定为 System.IO.FileAttributes
+          File.SetAttributes(path, System.IO.FileAttributes.Normal);
           File.Delete(path);
 
           if (!File.Exists(path))

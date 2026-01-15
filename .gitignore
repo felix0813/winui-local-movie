@@ -9,3 +9,4 @@ obj/
 *.pfx
 *.user
 *.tmp
+/winui-local-movie.csproj.user
