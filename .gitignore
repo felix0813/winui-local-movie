@@ -6,4 +6,6 @@ bin/
 obj/
 **/bin/
 **/obj/
-
+*.pfx
+*.user
+*.tmp
