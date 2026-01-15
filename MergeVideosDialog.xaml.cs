@@ -183,16 +183,17 @@ namespace winui_local_movie
         await MergeVideosWithFFmpeg(videoPaths, outputFilePath, _cancellationTokenSource.Token);
 
         // 删除原始文件
-        foreach (var path in videoPaths)
+        var failedDeletes = new List<string>();
+        foreach (var path in videoPaths.Distinct(StringComparer.OrdinalIgnoreCase))
         {
-          try
+          if (string.Equals(path, outputFilePath, StringComparison.OrdinalIgnoreCase))
           {
-            File.Delete(path);
+            continue;
           }
-          catch (Exception ex)
+
+          if (!await TryDeleteFileAsync(path))
           {
-            // 记录删除失败的日志，但不中断流程
-            Debug.WriteLine($"Failed to delete file {path}: {ex.Message}");
+            failedDeletes.Add(path);
           }
         }
 
@@ -204,7 +205,14 @@ namespace winui_local_movie
       {
         this.Hide();
       });
-        await ShowSuccessMessage($"视频已合并并保存到: {outputFilePath}");
+        string resultMessage = $"视频已合并并保存到: {outputFilePath}";
+        if (failedDeletes.Count > 0)
+        {
+          string failedList = string.Join("\n", failedDeletes.Take(5));
+          resultMessage += $"\n\n以下文件删除失败:\n{failedList}";
+        }
+
+        await ShowSuccessMessage(resultMessage);
       }
       catch (OperationCanceledException ex)
       {
@@ -241,6 +249,51 @@ namespace winui_local_movie
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
       }
+    }
+
+    private static async Task<bool> TryDeleteFileAsync(string path)
+    {
+      if (string.IsNullOrWhiteSpace(path))
+      {
+        return false;
+      }
+
+      const int maxAttempts = 3;
+      for (int attempt = 1; attempt <= maxAttempts; attempt++)
+      {
+        try
+        {
+          if (!File.Exists(path))
+          {
+            return true;
+          }
+
+          File.SetAttributes(path, FileAttributes.Normal);
+          File.Delete(path);
+
+          if (!File.Exists(path))
+          {
+            return true;
+          }
+        }
+        catch (IOException ex)
+        {
+          Debug.WriteLine($"Attempt {attempt} failed to delete {path}: {ex.Message}");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+          Debug.WriteLine($"Attempt {attempt} unauthorized to delete {path}: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+          Debug.WriteLine($"Unexpected error deleting {path}: {ex.Message}");
+          return false;
+        }
+
+        await Task.Delay(200);
+      }
+
+      return false;
     }
     private async Task MergeVideosWithFFmpeg(List<string> videoPaths, string outputFilePath, CancellationToken cancellationToken)
     {
