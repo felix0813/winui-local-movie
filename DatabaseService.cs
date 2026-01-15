@@ -340,6 +340,27 @@ namespace winui_local_movie
       await command.ExecuteNonQueryAsync();
     }
 
+    public async Task UpdateVideoFileInfoAsync(int videoId, string title, string filePath, string? thumbnailPath)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = @"
+        UPDATE Videos
+        SET Title = @Title,
+            FilePath = @FilePath,
+            ThumbnailPath = @ThumbnailPath
+        WHERE Id = @Id";
+
+      command.Parameters.AddWithValue("@Title", title);
+      command.Parameters.AddWithValue("@FilePath", filePath);
+      command.Parameters.AddWithValue("@ThumbnailPath", thumbnailPath ?? "");
+      command.Parameters.AddWithValue("@Id", videoId);
+
+      await command.ExecuteNonQueryAsync();
+    }
+
     public async Task DeleteVideoAsync(int videoId)
     {
       using var connection = new SqliteConnection(_connectionString);
