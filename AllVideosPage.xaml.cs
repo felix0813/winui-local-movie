@@ -490,8 +490,15 @@ namespace winui_local_movie
       // 创建弹窗内容
       var stackPanel = new StackPanel();
       // 添加视频信息
-      AddDetailRow(stackPanel, "标题:", video.Title);
-      AddDetailRow(stackPanel, "文件路径:", video.FilePath);
+      var titleValueBlock = AddDetailRow(stackPanel, "标题:", video.Title);
+      TextBlock fileNameValueBlock = null;
+      TextBlock filePathValueBlock = null;
+      fileNameValueBlock = AddFileNameRow(
+          stackPanel,
+          "文件名:",
+          Path.GetFileName(video.FilePath),
+          async (_, _) => await RenameVideoFileAsync(video, fileNameValueBlock, titleValueBlock, filePathValueBlock));
+      filePathValueBlock = AddDetailRow(stackPanel, "文件路径:", video.FilePath);
       AddDetailRow(stackPanel, "时长:", video.FormatDuration(video.Duration));
       AddDetailRow(stackPanel, "文件大小:", $"{video.FileSize} MB");
       AddDetailRow(stackPanel, "创建日期:", video.CreationDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A");
@@ -516,7 +523,7 @@ namespace winui_local_movie
       await dialog.ShowAsync();
     }
 
-    private void AddDetailRow(StackPanel parent, string label, string value)
+    private TextBlock AddDetailRow(StackPanel parent, string label, string value)
     {
       var row = new Grid();
       row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -550,6 +557,227 @@ namespace winui_local_movie
         BorderThickness = new Thickness(0, 0, 0, 1),
         Margin = new Thickness(0, 5, 0, 5)
       });
+
+      return valueBlock;
+    }
+
+    private TextBlock AddFileNameRow(StackPanel parent, string label, string fileName, RoutedEventHandler editHandler)
+    {
+      var row = new Grid();
+      row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+      row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+      row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+      var labelBlock = new TextBlock
+      {
+        Text = label,
+        FontWeight = FontWeights.Bold,
+        Margin = new Thickness(0, 0, 10, 0),
+        IsTextSelectionEnabled = true
+      };
+
+      var valueBlock = new TextBlock
+      {
+        Text = fileName ?? "N/A",
+        TextWrapping = TextWrapping.Wrap,
+        IsTextSelectionEnabled = true
+      };
+
+      var editButton = new Button
+      {
+        Content = "编辑",
+        Margin = new Thickness(10, 0, 0, 0),
+        MinWidth = 60
+      };
+      editButton.Click += editHandler;
+
+      Grid.SetColumn(labelBlock, 0);
+      Grid.SetColumn(valueBlock, 1);
+      Grid.SetColumn(editButton, 2);
+
+      row.Children.Add(labelBlock);
+      row.Children.Add(valueBlock);
+      row.Children.Add(editButton);
+
+      parent.Children.Add(row);
+      parent.Children.Add(new Border
+      {
+        BorderBrush = new SolidColorBrush(Colors.LightGray),
+        BorderThickness = new Thickness(0, 0, 0, 1),
+        Margin = new Thickness(0, 5, 0, 5)
+      });
+
+      return valueBlock;
+    }
+
+    private async Task RenameVideoFileAsync(
+        VideoModel video,
+        TextBlock fileNameValueBlock,
+        TextBlock titleValueBlock,
+        TextBlock filePathValueBlock)
+    {
+      var currentFileName = Path.GetFileNameWithoutExtension(video.FilePath);
+      var extension = Path.GetExtension(video.FilePath);
+
+      var nameInput = new TextBox
+      {
+        Text = currentFileName,
+        MinWidth = 240
+      };
+
+      var dialog = new ContentDialog
+      {
+        Title = "修改文件名",
+        Content = new StackPanel
+        {
+          Spacing = 8,
+          Children =
+          {
+            new TextBlock
+            {
+              Text = "请输入新的文件名（不包含扩展名）:",
+              TextWrapping = TextWrapping.Wrap
+            },
+            nameInput
+          }
+        },
+        PrimaryButtonText = "保存",
+        CloseButtonText = "取消",
+        XamlRoot = this.Content.XamlRoot
+      };
+
+      var result = await dialog.ShowAsync();
+      if (result != ContentDialogResult.Primary)
+      {
+        return;
+      }
+
+      var inputName = nameInput.Text?.Trim();
+      if (string.IsNullOrWhiteSpace(inputName))
+      {
+        await ShowErrorDialog("文件名不能为空");
+        return;
+      }
+
+      var baseName = Path.GetFileNameWithoutExtension(inputName);
+      if (string.IsNullOrWhiteSpace(baseName))
+      {
+        await ShowErrorDialog("文件名不能为空");
+        return;
+      }
+
+      if (baseName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+      {
+        await ShowErrorDialog("文件名包含非法字符");
+        return;
+      }
+
+      if (string.Equals(baseName, currentFileName, StringComparison.OrdinalIgnoreCase))
+      {
+        return;
+      }
+
+      var directory = Path.GetDirectoryName(video.FilePath);
+      if (string.IsNullOrWhiteSpace(directory))
+      {
+        await ShowErrorDialog("无法识别文件所在目录");
+        return;
+      }
+
+      var newFilePath = Path.Combine(directory, $"{baseName}{extension}");
+      if (File.Exists(newFilePath))
+      {
+        await ShowErrorDialog("目标文件名已存在，请更换名称");
+        return;
+      }
+
+      string? newThumbnailPath = null;
+      var originalFilePath = video.FilePath;
+      var originalThumbnailPath = video.ThumbnailPath;
+      var thumbnailRenamed = false;
+
+      try
+      {
+        File.Move(originalFilePath, newFilePath);
+      }
+      catch (Exception ex)
+      {
+        await ShowErrorDialog($"重命名失败: {ex.Message}");
+        return;
+      }
+
+      var resolvedOldThumbnailPath = originalThumbnailPath;
+      if (string.IsNullOrWhiteSpace(resolvedOldThumbnailPath))
+      {
+        var possibleThumbnailPath = Path.Combine(directory, $"{currentFileName}-poster.jpg");
+        if (File.Exists(possibleThumbnailPath))
+        {
+          resolvedOldThumbnailPath = possibleThumbnailPath;
+        }
+      }
+
+      if (!string.IsNullOrWhiteSpace(resolvedOldThumbnailPath) && File.Exists(resolvedOldThumbnailPath))
+      {
+        var thumbnailDirectory = Path.GetDirectoryName(resolvedOldThumbnailPath) ?? directory;
+        var thumbnailExtension = Path.GetExtension(resolvedOldThumbnailPath);
+        newThumbnailPath = Path.Combine(thumbnailDirectory, $"{baseName}-poster{thumbnailExtension}");
+
+        if (!string.Equals(resolvedOldThumbnailPath, newThumbnailPath, StringComparison.OrdinalIgnoreCase))
+        {
+          try
+          {
+            File.Move(resolvedOldThumbnailPath, newThumbnailPath);
+            thumbnailRenamed = true;
+          }
+          catch (Exception ex)
+          {
+            System.Diagnostics.Debug.WriteLine($"重命名缩略图失败: {ex.Message}");
+            newThumbnailPath = resolvedOldThumbnailPath;
+          }
+        }
+      }
+
+      try
+      {
+        await _databaseService.UpdateVideoFileInfoAsync(video.Id, baseName, newFilePath, newThumbnailPath);
+      }
+      catch (Exception ex)
+      {
+        try
+        {
+          if (File.Exists(newFilePath))
+          {
+            File.Move(newFilePath, originalFilePath);
+          }
+
+          if (thumbnailRenamed && !string.IsNullOrWhiteSpace(newThumbnailPath) &&
+              !string.IsNullOrWhiteSpace(resolvedOldThumbnailPath) &&
+              File.Exists(newThumbnailPath))
+          {
+            File.Move(newThumbnailPath, resolvedOldThumbnailPath);
+          }
+        }
+        catch (Exception rollbackEx)
+        {
+          System.Diagnostics.Debug.WriteLine($"回滚失败: {rollbackEx.Message}");
+        }
+
+        await ShowErrorDialog($"数据库更新失败: {ex.Message}");
+        return;
+      }
+
+      video.Title = baseName;
+      video.FilePath = newFilePath;
+      if (!string.IsNullOrWhiteSpace(newThumbnailPath))
+      {
+        video.ThumbnailPath = newThumbnailPath;
+      }
+
+      titleValueBlock.Text = baseName;
+      fileNameValueBlock.Text = $"{baseName}{extension}";
+      filePathValueBlock.Text = newFilePath;
+
+      await LoadVideosAsync();
     }
     // 播放视频方法
     private async Task PlayVideoAsync(VideoModel video)
