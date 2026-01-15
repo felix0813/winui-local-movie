@@ -1,2 +1,6 @@
 .vs
 /winui-local-movie.csproj
+AppPackages
+Publish
+bin
+obj
