@@ -214,6 +214,10 @@
                 Orientation="Horizontal"
                 HorizontalAlignment="Center"
                 Margin="10">
+      <Button x:Name="JumpBackTenPagesButton"
+              Content="后退10页"
+              Click="JumpBackTenPagesButton_Click"
+              Margin="5"/>
       <Button x:Name="PreviousPageButton"
               Content="上一页"
               Click="PreviousPageButton_Click"
@@ -224,6 +228,10 @@
       <Button x:Name="NextPageButton"
               Content="下一页"
               Click="NextPageButton_Click"
+              Margin="5"/>
+      <Button x:Name="JumpForwardTenPagesButton"
+              Content="前进10页"
+              Click="JumpForwardTenPagesButton_Click"
               Margin="5"/>
     </StackPanel>
   </Grid>
