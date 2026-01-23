@@ -253,48 +253,85 @@ namespace winui_local_movie
 
     private static async Task<bool> TryDeleteFileAsync(string path)
     {
-      if (string.IsNullOrWhiteSpace(path))
+      var normalizedPath = NormalizePath(path);
+      if (string.IsNullOrWhiteSpace(normalizedPath))
       {
         return false;
       }
 
-      const int maxAttempts = 3;
+      const int maxAttempts = 8;
+      var delayMs = 200;
       for (int attempt = 1; attempt <= maxAttempts; attempt++)
       {
         try
         {
-          if (!File.Exists(path))
+          if (!File.Exists(normalizedPath))
           {
             return true;
           }
 
           // 将 FileAttributes 明确限定为 System.IO.FileAttributes
-          File.SetAttributes(path, System.IO.FileAttributes.Normal);
-          File.Delete(path);
+          File.SetAttributes(normalizedPath, System.IO.FileAttributes.Normal);
+          File.Delete(normalizedPath);
 
-          if (!File.Exists(path))
+          if (!File.Exists(normalizedPath))
           {
             return true;
           }
         }
         catch (IOException ex)
         {
-          Debug.WriteLine($"Attempt {attempt} failed to delete {path}: {ex.Message}");
+          Debug.WriteLine($"Attempt {attempt} failed to delete {normalizedPath}: {ex.Message}");
         }
         catch (UnauthorizedAccessException ex)
         {
-          Debug.WriteLine($"Attempt {attempt} unauthorized to delete {path}: {ex.Message}");
+          Debug.WriteLine($"Attempt {attempt} unauthorized to delete {normalizedPath}: {ex.Message}");
         }
         catch (Exception ex)
         {
-          Debug.WriteLine($"Unexpected error deleting {path}: {ex.Message}");
+          Debug.WriteLine($"Unexpected error deleting {normalizedPath}: {ex.Message}");
           return false;
         }
 
-        await Task.Delay(200);
+        if (await TryDeleteWithStorageAsync(normalizedPath))
+        {
+          return true;
+        }
+
+        await Task.Delay(delayMs);
+        delayMs = Math.Min(delayMs * 2, 2000);
       }
 
-      return false;
+      return !File.Exists(normalizedPath);
+    }
+
+    private static async Task<bool> TryDeleteWithStorageAsync(string path)
+    {
+      try
+      {
+        var file = await StorageFile.GetFileFromPathAsync(path);
+        await file.DeleteAsync(StorageDeleteOption.PermanentDelete);
+        return true;
+      }
+      catch (FileNotFoundException)
+      {
+        return true;
+      }
+      catch (Exception ex)
+      {
+        Debug.WriteLine($"Storage delete failed for {path}: {ex.Message}");
+        return false;
+      }
+    }
+
+    private static string NormalizePath(string path)
+    {
+      if (string.IsNullOrWhiteSpace(path))
+      {
+        return string.Empty;
+      }
+
+      return path.Trim().Trim('"');
     }
     private async Task MergeVideosWithFFmpeg(List<string> videoPaths, string outputFilePath, CancellationToken cancellationToken)
     {
