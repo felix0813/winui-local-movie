@@ -25,6 +25,7 @@ namespace winui_local_movie
     private readonly DatabaseService _databaseService;
     private int _currentPage = 1;
     private const int PageSize = 100;
+    private const int JumpPageCount = 10;
     private int _totalVideos;
     private string _currentSortProperty = "DateAdded";
     private bool _isAscending = false;
@@ -217,24 +218,45 @@ namespace winui_local_movie
       // 更新按钮状态
       PreviousPageButton.IsEnabled = _currentPage > 1;
       NextPageButton.IsEnabled = _currentPage < totalPages;
+      JumpBackTenPagesButton.IsEnabled = _currentPage > 1;
+      JumpForwardTenPagesButton.IsEnabled = _currentPage < totalPages;
     }
     private void PreviousPageButton_Click(object sender, RoutedEventArgs e)
     {
-      if (_currentPage > 1)
-      {
-        _currentPage--;
-        LoadVideosAsync();
-      }
+      GoToPage(_currentPage - 1);
     }
 
     private void NextPageButton_Click(object sender, RoutedEventArgs e)
     {
+      GoToPage(_currentPage + 1);
+    }
+
+    private void JumpBackTenPagesButton_Click(object sender, RoutedEventArgs e)
+    {
+      GoToPage(_currentPage - JumpPageCount);
+    }
+
+    private void JumpForwardTenPagesButton_Click(object sender, RoutedEventArgs e)
+    {
+      GoToPage(_currentPage + JumpPageCount);
+    }
+
+    private void GoToPage(int targetPage)
+    {
       int totalPages = (int)Math.Ceiling((double)_totalVideos / PageSize);
-      if (_currentPage < totalPages)
+      if (totalPages < 1)
       {
-        _currentPage++;
-        LoadVideosAsync();
+        return;
       }
+
+      int clampedPage = Math.Max(1, Math.Min(targetPage, totalPages));
+      if (clampedPage == _currentPage)
+      {
+        return;
+      }
+
+      _currentPage = clampedPage;
+      LoadVideosAsync();
     }
 
     // 缩略图双击播放事件
