@@ -209,7 +209,7 @@ namespace winui_local_movie
         if (failedDeletes.Count > 0)
         {
           string failedList = string.Join("\n", failedDeletes.Take(5));
-          resultMessage += $"\n\n以下文件删除失败:\n{failedList}";
+          resultMessage += $"\n\n以下文件删除失败，请手动删除:\n{failedList}";
         }
 
         await ShowSuccessMessage(resultMessage);
@@ -259,8 +259,8 @@ namespace winui_local_movie
         return false;
       }
 
-      const int maxAttempts = 8;
-      var delayMs = 200;
+      const int maxAttempts = 3;
+      var delayMs = 150;
       for (int attempt = 1; attempt <= maxAttempts; attempt++)
       {
         try
@@ -299,7 +299,7 @@ namespace winui_local_movie
         }
 
         await Task.Delay(delayMs);
-        delayMs = Math.Min(delayMs * 2, 2000);
+        delayMs = Math.Min(delayMs * 2, 600);
       }
 
       return !File.Exists(normalizedPath);
