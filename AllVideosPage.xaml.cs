@@ -3,6 +3,8 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -37,6 +39,8 @@ namespace winui_local_movie
     private ViewMode currentViewMode = ViewMode.All;
     private bool _isMultiSelectMode = false;
     private List<VideoModel> _selectedVideos = new List<VideoModel>();
+    private bool _suppressNextThumbnailTap = false;
+    private bool _suppressTempItemClick = false;
     public AllVideosPage()
     {
       this.InitializeComponent();
@@ -270,11 +274,53 @@ namespace winui_local_movie
     {
       if (_isMultiSelectMode)
         return;
+      if (_suppressNextThumbnailTap)
+      {
+        _suppressNextThumbnailTap = false;
+        return;
+      }
+      if (IsFromInteractiveElement(e.OriginalSource))
+        return;
       var frameworkElement = sender as FrameworkElement;
       if (frameworkElement?.DataContext is VideoModel video)
       {
         await PlayVideoAsync(video);
       }
+    }
+
+    private void VideosGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+      _suppressNextThumbnailTap = IsFromInteractiveElement(e.OriginalSource);
+    }
+
+    private void TempVideosListView_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+      _suppressTempItemClick = IsFromInteractiveElement(e.OriginalSource);
+    }
+
+    private static bool IsFromInteractiveElement(object source)
+    {
+      if (source is not DependencyObject current)
+      {
+        return false;
+      }
+
+      while (current != null)
+      {
+        if (current is ButtonBase || current is CheckBox || current is ToggleButton)
+        {
+          return true;
+        }
+
+        if (current is FrameworkElement element && element.Name == "SelectionCheckBox")
+        {
+          return true;
+        }
+
+        current = VisualTreeHelper.GetParent(current);
+      }
+
+      return false;
     }
 
     // 喜欢按钮点击事件
@@ -917,7 +963,7 @@ namespace winui_local_movie
 
       e.Data.Properties["TempVideos"] = videos;
       e.Data.SetText(string.Join("|", videos.Select(v => v.Id)));
-      e.AllowedOperations = DataPackageOperation.Copy;
+      e.Data.RequestedOperation = DataPackageOperation.Copy;
     }
 
     private void TempVideosListView_DragOver(object sender, DragEventArgs e)
@@ -1061,6 +1107,11 @@ namespace winui_local_movie
 
     private async void TempVideosListView_ItemClick(object sender, ItemClickEventArgs e)
     {
+      if (_suppressTempItemClick)
+      {
+        _suppressTempItemClick = false;
+        return;
+      }
       if (e.ClickedItem is VideoModel video)
       {
         await PlayVideoAsync(video);

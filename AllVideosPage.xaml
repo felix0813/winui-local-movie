@@ -133,6 +133,7 @@
                 SelectionMode="Extended"
                 IsItemClickEnabled="True"
                 CanDragItems="True"
+                PointerPressed="VideosGridView_PointerPressed"
                 DragItemsStarting="VideosGridView_DragItemsStarting"
                 ItemClick="VideosGridView_ItemClick"
                 SelectionChanged="VideosGridView_SelectionChanged">
@@ -146,10 +147,21 @@
               <Border Background="LightGray"
                       Height="125"
                       Tapped="Thumbnail_Tapped">
-                <Image Source="{x:Bind GetThumbnailPath(FilePath)}"
-                       Stretch="UniformToFill"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
+                <Grid>
+                  <Image Source="{x:Bind GetThumbnailPath(FilePath)}"
+                         Stretch="UniformToFill"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+                  <Button Content="?"
+                          FontSize="14"
+                          Width="26"
+                          Height="26"
+                          Margin="6"
+                          HorizontalAlignment="Right"
+                          VerticalAlignment="Top"
+                          Click="AddToTempListButton_Click"
+                          Tag="{x:Bind}"/>
+                </Grid>
               </Border>
 
               <!-- 下方按钮区域 -->
@@ -200,13 +212,6 @@
                         Click="DetailsButton_Click"
                         Tag="{x:Bind}"
                         Name="DetailsBtn"/>
-                <Button Content="➕临时"
-                        FontSize="12"
-                        Width="60"
-                        Height="40"
-                        Margin="2"
-                        Click="AddToTempListButton_Click"
-                        Tag="{x:Bind}"/>
               </StackPanel>
 
               <!-- 视频标题和时长 -->
@@ -279,16 +284,26 @@
                     ItemClick="TempVideosListView_ItemClick"
                     SelectionMode="Multiple"
                     AllowDrop="True"
+                    PointerPressed="TempVideosListView_PointerPressed"
                     DragOver="TempVideosListView_DragOver"
                     Drop="TempVideosListView_Drop">
             <ListView.ItemTemplate>
               <DataTemplate x:DataType="local:VideoModel">
                 <Grid Padding="6">
                   <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                   </Grid.ColumnDefinitions>
-                  <StackPanel>
+                  <Border Width="44"
+                          Height="44"
+                          Background="LightGray"
+                          CornerRadius="4"
+                          Margin="0,0,8,0">
+                    <Image Source="{x:Bind GetThumbnailPath(FilePath)}"
+                           Stretch="UniformToFill"/>
+                  </Border>
+                  <StackPanel Grid.Column="1">
                     <TextBlock Text="{x:Bind Title}"
                                FontWeight="SemiBold"
                                TextTrimming="CharacterEllipsis"
@@ -297,7 +312,7 @@
                                FontSize="12"
                                Foreground="Gray"/>
                   </StackPanel>
-                  <Button Grid.Column="1"
+                  <Button Grid.Column="2"
                           Content="移除"
                           Margin="8,0,0,0"
                           Click="RemoveTempVideoButton_Click"
