@@ -48,6 +48,7 @@ namespace winui_local_movie
       LoadVideosAsync();
 
       VideosGridView.ContainerContentChanging += VideosGridView_ContainerContentChanging;
+      TempVideosListView.AddHandler(PointerPressedEvent, new PointerEventHandler(TempVideosListView_PointerPressed), true);
       TempVideosListView.ItemsSource = _tempVideos;
       UpdateTempListPlaceholder();
 

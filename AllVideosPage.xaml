@@ -152,15 +152,16 @@
                          Stretch="UniformToFill"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"/>
-                  <Button Content="?"
-                          FontSize="14"
-                          Width="26"
-                          Height="26"
+                  <Button Width="28"
+                          Height="28"
+                          Padding="0"
                           Margin="6"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Top"
                           Click="AddToTempListButton_Click"
-                          Tag="{x:Bind}"/>
+                          Tag="{x:Bind}">
+                    <SymbolIcon Symbol="Add"/>
+                  </Button>
                 </Grid>
               </Border>
 
@@ -284,7 +285,6 @@
                     ItemClick="TempVideosListView_ItemClick"
                     SelectionMode="Multiple"
                     AllowDrop="True"
-                    PointerPressed="TempVideosListView_PointerPressed"
                     DragOver="TempVideosListView_DragOver"
                     Drop="TempVideosListView_Drop">
             <ListView.ItemTemplate>
