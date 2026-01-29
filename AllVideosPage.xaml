@@ -8,64 +8,64 @@
   xmlns:local="using:winui_local_movie"
   mc:Ignorable="d">
 
-  <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*"/>
-      <ColumnDefinition Width="320"/>
-    </Grid.ColumnDefinitions>
-
-    <Grid Grid.Column="0">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="*"/>
-        <RowDefinition Height="Auto"/>
-      </Grid.RowDefinitions>
-      <Grid Grid.Row="0"
-            Margin="10"
-            HorizontalAlignment="Stretch">
+    <Grid>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto"/>
-          <!-- 左侧导航按钮 -->
-          <ColumnDefinition Width="*"/>
-          <!-- 中间占位空白 -->
-          <ColumnDefinition Width="Auto"/>
-          <!-- 右侧排序控件 -->
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="320"/>
         </Grid.ColumnDefinitions>
 
-        <!-- 导航按钮 -->
-        <StackPanel Grid.Column="0"
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0"
+            Margin="10"
+            HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- 左侧导航按钮 -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- 中间占位空白 -->
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- 右侧排序控件 -->
+                </Grid.ColumnDefinitions>
+
+                <!-- 导航按钮 -->
+                <StackPanel Grid.Column="0"
                     Orientation="Horizontal">
-          <Button x:Name="AllVideosButton"
+                    <Button x:Name="AllVideosButton"
                   Content="全部视频"
                   Click="FilterButton_Click"
                   Tag="All"
                   Style="{StaticResource AccentButtonStyle}"
                   Margin="0,0,5,0"/>
-          <Button x:Name="FavoritesButton"
+                    <Button x:Name="FavoritesButton"
                   Content="我的喜欢"
                   Click="FilterButton_Click"
                   Tag="Favorites"
                   Margin="5,0"/>
-          <Button x:Name="WatchLaterButton"
+                    <Button x:Name="WatchLaterButton"
                   Content="稍后再看"
                   Click="FilterButton_Click"
                   Tag="WatchLater"
                   Margin="5,0"/>
-          <Button x:Name="MultiSelectButton"
+                    <Button x:Name="MultiSelectButton"
                   Content="多选"
                   Click="MultiSelectButton_Click"
                   Margin="5,0"/>
-          <Button x:Name="ExitMultiSelectButton"
+                    <Button x:Name="ExitMultiSelectButton"
                   Content="退出多选"
                   Click="ExitMultiSelectButton_Click"
                   Visibility="Collapsed"
                   Margin="5,0"/>
-        </StackPanel>
-        <!-- 在现有导航按钮 StackPanel 后面添加 -->
-        <StackPanel Grid.Column="1"
+                </StackPanel>
+                <!-- 在现有导航按钮 StackPanel 后面添加 -->
+                <StackPanel Grid.Column="1"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center">
-          <AutoSuggestBox x:Name="SearchBox"
+                    <AutoSuggestBox x:Name="SearchBox"
                           PlaceholderText="搜索视频..."
                           QueryIcon="Find"
                           Width="300"
@@ -75,60 +75,60 @@
                           QuerySubmitted="SearchBox_QuerySubmitted"
                           Margin="10,0"
                           VerticalAlignment="Center"/>
-        </StackPanel>
-        <!-- 排序控件 -->
-        <StackPanel Grid.Column="2"
+                </StackPanel>
+                <!-- 排序控件 -->
+                <StackPanel Grid.Column="2"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Margin="20,0,0,0">
-          <Button x:Name="BulkDeleteButton"
+                    <Button x:Name="BulkDeleteButton"
                   Content="删除文件"
                   Click="BulkDeleteButton_Click"
                   Visibility="Collapsed"
                   Margin="5,0"/>
-          <Button x:Name="BulkRefreshMetadataButton"
+                    <Button x:Name="BulkRefreshMetadataButton"
                   Content="刷新元数据"
                   Click="BulkRefreshMetadataButton_Click"
                   Visibility="Collapsed"
                   Margin="5,0"/>
-          <ComboBox x:Name="SortPropertyComboBox"
+                    <ComboBox x:Name="SortPropertyComboBox"
                     Header="排序属性"
                     SelectionChanged="SortPropertyComboBox_SelectionChanged"
                     MinWidth="120"
                     Margin="5,0">
-            <ComboBoxItem Content="加入时间"
+                        <ComboBoxItem Content="加入时间"
                           Tag="DateAdded"
                           IsSelected="True"/>
-            <ComboBoxItem Content="文件大小"
+                        <ComboBoxItem Content="文件大小"
                           Tag="FileSize"/>
-            <ComboBoxItem Content="创建时间"
+                        <ComboBoxItem Content="创建时间"
                           Tag="CreationDate"/>
-            <ComboBoxItem Content="时长"
+                        <ComboBoxItem Content="时长"
                           Tag="Duration"/>
-          </ComboBox>
+                    </ComboBox>
 
-          <ComboBox x:Name="SortOrderComboBox"
+                    <ComboBox x:Name="SortOrderComboBox"
                     Header="排序方向"
                     SelectionChanged="SortOrderComboBox_SelectionChanged"
                     MinWidth="100"
                     Margin="5,0">
-            <ComboBoxItem Content="降序"
+                        <ComboBoxItem Content="降序"
                           Tag="DESC"
                           IsSelected="True"/>
-            <ComboBoxItem Content="升序"
+                        <ComboBoxItem Content="升序"
                           Tag="ASC"/>
-          </ComboBox>
+                    </ComboBox>
 
-          <Button Content="应用排序"
+                    <Button Content="应用排序"
                   Click="ApplySortButton_Click"
                   Margin="10,0"
                   VerticalAlignment="Bottom"/>
-        </StackPanel>
-      </Grid>
+                </StackPanel>
+            </Grid>
 
 
-      <!-- 视频列表 -->
-      <GridView x:Name="VideosGridView"
+            <!-- 视频列表 -->
+            <GridView x:Name="VideosGridView"
                 Grid.Row="1"
                 SelectionMode="Extended"
                 IsItemClickEnabled="True"
@@ -137,22 +137,22 @@
                 DragItemsStarting="VideosGridView_DragItemsStarting"
                 ItemClick="VideosGridView_ItemClick"
                 SelectionChanged="VideosGridView_SelectionChanged">
-        <GridView.ItemTemplate>
-          <DataTemplate x:DataType="local:VideoModel">
-            <StackPanel Width="220"
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="local:VideoModel">
+                        <StackPanel Width="220"
                         Margin="5"
                         Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
 
-              <!-- 上方缩略图区域 -->
-              <Border Background="LightGray"
+                            <!-- 上方缩略图区域 -->
+                            <Border Background="LightGray"
                       Height="125"
                       Tapped="Thumbnail_Tapped">
-                <Grid>
-                  <Image Source="{x:Bind GetThumbnailPath(FilePath)}"
+                                <Grid>
+                                    <Image Source="{x:Bind GetThumbnailPath(FilePath)}"
                          Stretch="UniformToFill"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"/>
-                  <Button Width="28"
+                                    <Button Width="28"
                           Height="28"
                           Padding="0"
                           Margin="6"
@@ -160,16 +160,16 @@
                           VerticalAlignment="Top"
                           Click="AddToTempListButton_Click"
                           Tag="{x:Bind}">
-                    <SymbolIcon Symbol="Add"/>
-                  </Button>
-                </Grid>
-              </Border>
+                                        <SymbolIcon Symbol="Add"/>
+                                    </Button>
+                                </Grid>
+                            </Border>
 
-              <!-- 下方按钮区域 -->
-              <StackPanel Orientation="Horizontal"
+                            <!-- 下方按钮区域 -->
+                            <StackPanel Orientation="Horizontal"
                           HorizontalAlignment="Center"
                           Margin="0,5,0,0">
-                <Button Content="{x:Bind GetFavoriteIcon(IsFavorite)}"
+                                <Button Content="{x:Bind GetFavoriteIcon(IsFavorite)}"
                         Foreground="{x:Bind GetFavoriteColor(IsFavorite)}"
                         FontSize="12"
                         Width="40"
@@ -179,8 +179,8 @@
                         Tag="{x:Bind}"
                         Name="FavoriteBtn"/>
 
-                <!-- 修改稍后再看按钮 -->
-                <Button Content="{x:Bind GetWatchLaterIcon(IsWatchLater)}"
+                                <!-- 修改稍后再看按钮 -->
+                                <Button Content="{x:Bind GetWatchLaterIcon(IsWatchLater)}"
                         Foreground="{x:Bind GetWatchLaterColor(IsWatchLater)}"
                         FontSize="12"
                         Width="40"
@@ -189,7 +189,7 @@
                         Click="WatchLaterButton_Click"
                         Tag="{x:Bind}"
                         Name="WatchLaterBtn"/>
-                <Button Content="🗑"
+                                <Button Content="🗑"
                         FontSize="12"
                         Width="40"
                         Height="40"
@@ -197,7 +197,7 @@
                         Click="DeleteButton_Click"
                         Tag="{x:Bind}"
                         Name="DeleteBtn"/>
-                <Button Content="⟳"
+                                <Button Content="⟳"
                         FontSize="16"
                         Width="40"
                         Height="40"
@@ -205,7 +205,7 @@
                         Click="RefreshMetadataButton_Click"
                         Tag="{x:Bind}"
                         Name="RefreshBtn"/>
-                <Button Content="ℹ"
+                                <Button Content="ℹ"
                         FontSize="12"
                         Width="40"
                         Height="40"
@@ -213,135 +213,134 @@
                         Click="DetailsButton_Click"
                         Tag="{x:Bind}"
                         Name="DetailsBtn"/>
-              </StackPanel>
+                            </StackPanel>
 
-              <!-- 视频标题和时长 -->
-              <TextBlock Text="{x:Bind Title}"
+                            <!-- 视频标题和时长 -->
+                            <TextBlock Text="{x:Bind Title}"
                          FontWeight="Bold"
                          TextWrapping="Wrap"
                          MaxLines="1"
                          Margin="0,2,0,0"/>
-              <TextBlock Text="{x:Bind FormatDuration(Duration)}"
+                            <TextBlock Text="{x:Bind FormatDuration(Duration)}"
                          FontSize="12"
                          Foreground="Gray"/>
-            </StackPanel>
-          </DataTemplate>
-        </GridView.ItemTemplate>
-      </GridView>
+                        </StackPanel>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
 
-      <!-- 分页控件 -->
-      <StackPanel Grid.Row="2"
+            <!-- 分页控件 -->
+            <StackPanel Grid.Row="2"
                   Orientation="Horizontal"
                   HorizontalAlignment="Center"
                   Margin="10">
-        <Button x:Name="JumpBackTenPagesButton"
+                <Button x:Name="JumpBackTenPagesButton"
                 Content="后退10页"
                 Click="JumpBackTenPagesButton_Click"
                 Margin="5"/>
-        <Button x:Name="PreviousPageButton"
+                <Button x:Name="PreviousPageButton"
                 Content="上一页"
                 Click="PreviousPageButton_Click"
                 Margin="5"/>
-        <TextBlock x:Name="PageInfoText"
+                <TextBlock x:Name="PageInfoText"
                    VerticalAlignment="Center"
                    Margin="10,0"/>
-        <Button x:Name="NextPageButton"
+                <Button x:Name="NextPageButton"
                 Content="下一页"
                 Click="NextPageButton_Click"
                 Margin="5"/>
-        <Button x:Name="JumpForwardTenPagesButton"
+                <Button x:Name="JumpForwardTenPagesButton"
                 Content="前进10页"
                 Click="JumpForwardTenPagesButton_Click"
                 Margin="5"/>
-      </StackPanel>
-    </Grid>
+            </StackPanel>
+        </Grid>
 
-    <Border Grid.Column="1"
+        <Border Grid.Column="1"
             Margin="0,10,10,10"
             Padding="10"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
             BorderThickness="1"
             CornerRadius="8">
-      <Grid>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-          <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal"
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal"
                     Spacing="8"
                     HorizontalAlignment="Left">
-          <TextBlock Text="临时列表"
+                    <TextBlock Text="临时列表"
                      FontWeight="Bold"
                      FontSize="16"/>
-          <TextBlock Text="(本次会话)"
+                    <TextBlock Text="(本次会话)"
                      Foreground="Gray"
                      VerticalAlignment="Center"/>
-        </StackPanel>
-        <Grid Grid.Row="1">
-          <ListView x:Name="TempVideosListView"
-                    IsItemClickEnabled="True"
-                    ItemClick="TempVideosListView_ItemClick"
+                </StackPanel>
+                <Grid Grid.Row="1">
+                    <ListView x:Name="TempVideosListView"
+                    IsItemClickEnabled="False"
                     SelectionMode="Multiple"
                     AllowDrop="True"
                     DragOver="TempVideosListView_DragOver"
                     Drop="TempVideosListView_Drop">
-            <ListView.ItemTemplate>
-              <DataTemplate x:DataType="local:VideoModel">
-                <Grid Padding="6">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  <Border Width="44"
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="local:VideoModel">
+                                <Grid Padding="6" Tapped="TempListItem_Tapped">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="44"
                           Height="44"
                           Background="LightGray"
                           CornerRadius="4"
                           Margin="0,0,8,0">
-                    <Image Source="{x:Bind GetThumbnailPath(FilePath)}"
+                                        <Image Source="{x:Bind GetThumbnailPath(FilePath)}"
                            Stretch="UniformToFill"/>
-                  </Border>
-                  <StackPanel Grid.Column="1">
-                    <TextBlock Text="{x:Bind Title}"
+                                    </Border>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{x:Bind Title}"
                                FontWeight="SemiBold"
                                TextTrimming="CharacterEllipsis"
                                MaxLines="1"/>
-                    <TextBlock Text="{x:Bind FormatDuration(Duration)}"
+                                        <TextBlock Text="{x:Bind FormatDuration(Duration)}"
                                FontSize="12"
                                Foreground="Gray"/>
-                  </StackPanel>
-                  <Button Grid.Column="2"
+                                    </StackPanel>
+                                    <Button Grid.Column="2"
                           Content="移除"
                           Margin="8,0,0,0"
                           Click="RemoveTempVideoButton_Click"
                           Tag="{x:Bind}"/>
-                </Grid>
-              </DataTemplate>
-            </ListView.ItemTemplate>
-          </ListView>
-          <TextBlock x:Name="TempListPlaceholder"
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <TextBlock x:Name="TempListPlaceholder"
                      Text="拖拽视频或点击“➕临时”添加"
                      Foreground="Gray"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                      TextWrapping="Wrap"
                      Margin="10"/>
-        </Grid>
-        <StackPanel Grid.Row="2"
+                </Grid>
+                <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Spacing="8"
                     Margin="0,10,0,0">
-          <Button x:Name="RemoveTempSelectedButton"
+                    <Button x:Name="RemoveTempSelectedButton"
                   Content="从列表移除"
                   Click="RemoveTempSelectedButton_Click"/>
-          <Button x:Name="DeleteTempSelectedButton"
+                    <Button x:Name="DeleteTempSelectedButton"
                   Content="删除文件"
                   Click="DeleteTempSelectedButton_Click"/>
-        </StackPanel>
-      </Grid>
-    </Border>
-  </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
 </Page>
