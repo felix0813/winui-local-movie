@@ -5,11 +5,13 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 
 namespace winui_local_movie
@@ -29,6 +31,8 @@ namespace winui_local_movie
     private int _totalVideos;
     private string _currentSortProperty = "DateAdded";
     private bool _isAscending = false;
+    private readonly ObservableCollection<VideoModel> _tempVideos = new ObservableCollection<VideoModel>();
+    private readonly HashSet<int> _tempVideoIds = new HashSet<int>();
 
     private ViewMode currentViewMode = ViewMode.All;
     private bool _isMultiSelectMode = false;
@@ -40,6 +44,8 @@ namespace winui_local_movie
       LoadVideosAsync();
 
       VideosGridView.ContainerContentChanging += VideosGridView_ContainerContentChanging;
+      TempVideosListView.ItemsSource = _tempVideos;
+      UpdateTempListPlaceholder();
 
     }
     // 容器内容更改事件处理
@@ -899,6 +905,194 @@ namespace winui_local_movie
       // 这里可以处理项目点击事件
       // 例如：选择项目、显示详细信息等
       // 注意：双击播放已经在 Thumbnail_Tapped 中处理
+    }
+
+    private void VideosGridView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+    {
+      var videos = e.Items.OfType<VideoModel>().ToList();
+      if (videos.Count == 0)
+      {
+        return;
+      }
+
+      e.Data.Properties["TempVideos"] = videos;
+      e.Data.SetText(string.Join("|", videos.Select(v => v.Id)));
+      e.AllowedOperations = DataPackageOperation.Copy;
+    }
+
+    private void TempVideosListView_DragOver(object sender, DragEventArgs e)
+    {
+      e.AcceptedOperation = DataPackageOperation.Copy;
+    }
+
+    private async void TempVideosListView_Drop(object sender, DragEventArgs e)
+    {
+      if (e.DataView.Properties.TryGetValue("TempVideos", out var value) &&
+          value is IList<VideoModel> draggedVideos)
+      {
+        foreach (var video in draggedVideos)
+        {
+          AddToTempList(video);
+        }
+        return;
+      }
+
+      if (e.DataView.Contains(StandardDataFormats.Text))
+      {
+        var text = await e.DataView.GetTextAsync();
+        var ids = text.Split('|', StringSplitOptions.RemoveEmptyEntries)
+            .Select(id => int.TryParse(id, out var parsed) ? parsed : -1)
+            .Where(id => id > 0)
+            .ToList();
+
+        if (ids.Count == 0)
+        {
+          return;
+        }
+
+        var sourceVideos = VideosGridView.ItemsSource as IEnumerable<VideoModel>;
+        if (sourceVideos == null)
+        {
+          return;
+        }
+
+        foreach (var video in sourceVideos.Where(v => ids.Contains(v.Id)))
+        {
+          AddToTempList(video);
+        }
+      }
+    }
+
+    private void AddToTempListButton_Click(object sender, RoutedEventArgs e)
+    {
+      if (sender is Button button && button.Tag is VideoModel video)
+      {
+        AddToTempList(video);
+      }
+    }
+
+    private void RemoveTempVideoButton_Click(object sender, RoutedEventArgs e)
+    {
+      if (sender is Button button && button.Tag is VideoModel video)
+      {
+        RemoveTempVideo(video);
+      }
+    }
+
+    private void RemoveTempSelectedButton_Click(object sender, RoutedEventArgs e)
+    {
+      var selectedVideos = TempVideosListView.SelectedItems.Cast<VideoModel>().ToList();
+      if (selectedVideos.Count == 0)
+      {
+        return;
+      }
+
+      foreach (var video in selectedVideos)
+      {
+        RemoveTempVideo(video);
+      }
+    }
+
+    private async void DeleteTempSelectedButton_Click(object sender, RoutedEventArgs e)
+    {
+      var selectedVideos = TempVideosListView.SelectedItems.Cast<VideoModel>().ToList();
+      if (selectedVideos.Count == 0)
+      {
+        await ShowErrorDialog("请选择要删除的临时列表视频");
+        return;
+      }
+
+      var dialog = new ContentDialog
+      {
+        Title = "确认删除",
+        Content = $"确定要删除 {selectedVideos.Count} 个临时列表视频文件和记录吗？",
+        PrimaryButtonText = "删除",
+        CloseButtonText = "取消",
+        XamlRoot = this.Content.XamlRoot
+      };
+
+      var result = await dialog.ShowAsync();
+      if (result != ContentDialogResult.Primary)
+      {
+        return;
+      }
+
+      int deletedCount = 0;
+      List<string> failedFiles = new List<string>();
+
+      foreach (var video in selectedVideos)
+      {
+        try
+        {
+          if (File.Exists(video.FilePath))
+          {
+            File.Delete(video.FilePath);
+          }
+
+          await _databaseService.DeleteVideoAsync(video.Id);
+          deletedCount++;
+          RemoveTempVideo(video);
+        }
+        catch (Exception ex)
+        {
+          failedFiles.Add($"{video.Title}: {ex.Message}");
+        }
+      }
+
+      await LoadVideosAsync();
+
+      string message = $"成功删除 {deletedCount} 个视频";
+      if (failedFiles.Count > 0)
+      {
+        message += $"\n\n以下文件删除失败:\n{string.Join("\n", failedFiles.Take(5))}";
+        if (failedFiles.Count > 5)
+          message += $"\n...还有 {failedFiles.Count - 5} 个文件";
+      }
+
+      var resultDialog = new ContentDialog
+      {
+        Title = "删除结果",
+        Content = message,
+        CloseButtonText = "确定",
+        XamlRoot = this.Content.XamlRoot
+      };
+      await resultDialog.ShowAsync();
+    }
+
+    private async void TempVideosListView_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      if (e.ClickedItem is VideoModel video)
+      {
+        await PlayVideoAsync(video);
+      }
+    }
+
+    private void AddToTempList(VideoModel video)
+    {
+      if (_tempVideoIds.Add(video.Id))
+      {
+        _tempVideos.Add(video);
+        UpdateTempListPlaceholder();
+      }
+    }
+
+    private void RemoveTempVideo(VideoModel video)
+    {
+      if (_tempVideoIds.Remove(video.Id))
+      {
+        _tempVideos.Remove(video);
+        UpdateTempListPlaceholder();
+      }
+    }
+
+    private void UpdateTempListPlaceholder()
+    {
+      if (TempListPlaceholder == null)
+      {
+        return;
+      }
+
+      TempListPlaceholder.Visibility = _tempVideos.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // 显示错误对话框的辅助方法
