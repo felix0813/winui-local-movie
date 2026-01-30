@@ -20,6 +20,9 @@ namespace winui_local_movie
 {
     public sealed partial class AllVideosPage : Page
     {
+        private const double VideoCardMinWidth = 220;
+        private const double VideoCardItemMargin = 5;
+
         private enum ViewMode
         {
             All,
@@ -48,10 +51,66 @@ namespace winui_local_movie
             LoadVideosAsync();
 
             VideosGridView.ContainerContentChanging += VideosGridView_ContainerContentChanging;
+            VideosGridView.Loaded += VideosGridView_Loaded;
             TempVideosListView.AddHandler(PointerPressedEvent, new PointerEventHandler(TempVideosListView_PointerPressed), true);
             TempVideosListView.ItemsSource = _tempVideos;
             UpdateTempListPlaceholder();
 
+        }
+
+        private void VideosGridView_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateVideosGridLayout();
+        }
+
+        private void VideosGridView_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateVideosGridLayout();
+        }
+
+        private void UpdateVideosGridLayout()
+        {
+            if (VideosGridView == null || VideosGridView.ActualWidth <= 0)
+            {
+                return;
+            }
+
+            double availableWidth = VideosGridView.ActualWidth;
+            double totalItemSpacing = VideoCardItemMargin * 2;
+            int columns = Math.Max(1, (int)Math.Floor((availableWidth + totalItemSpacing) / (VideoCardMinWidth + totalItemSpacing)));
+            double itemWidth = (availableWidth - (columns * totalItemSpacing)) / columns;
+
+            if (itemWidth < VideoCardMinWidth)
+            {
+                itemWidth = VideoCardMinWidth;
+            }
+
+            ItemsWrapGrid? itemsWrapGrid = FindDescendant<ItemsWrapGrid>(VideosGridView);
+            if (itemsWrapGrid != null)
+            {
+                itemsWrapGrid.ItemWidth = itemWidth;
+            }
+        }
+
+        private static T? FindDescendant<T>(DependencyObject parent) where T : DependencyObject
+        {
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                {
+                    return typedChild;
+                }
+
+                T? descendant = FindDescendant<T>(child);
+                if (descendant != null)
+                {
+                    return descendant;
+                }
+            }
+
+            return null;
         }
         // 容器内容更改事件处理
         private void VideosGridView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)

@@ -136,12 +136,27 @@
                 PointerPressed="VideosGridView_PointerPressed"
                 DragItemsStarting="VideosGridView_DragItemsStarting"
                 ItemClick="VideosGridView_ItemClick"
-                SelectionChanged="VideosGridView_SelectionChanged">
+                SelectionChanged="VideosGridView_SelectionChanged"
+                SizeChanged="VideosGridView_SizeChanged">
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal"
+                            MinItemWidth="220"/>
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalContentAlignment" Value="Top"/>
+                        <Setter Property="Margin" Value="5"/>
+                    </Style>
+                </GridView.ItemContainerStyle>
                 <GridView.ItemTemplate>
                     <DataTemplate x:DataType="local:VideoModel">
-                        <StackPanel Width="220"
-                        Margin="5"
-                        Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+                        <Viewbox Stretch="Uniform"
+                            StretchDirection="UpOnly">
+                            <StackPanel Width="220"
+                            Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
 
                             <!-- 上方缩略图区域 -->
                             <Border Background="LightGray"
@@ -224,7 +239,8 @@
                             <TextBlock Text="{x:Bind FormatDuration(Duration)}"
                          FontSize="12"
                          Foreground="Gray"/>
-                        </StackPanel>
+                            </StackPanel>
+                        </Viewbox>
                     </DataTemplate>
                 </GridView.ItemTemplate>
             </GridView>
