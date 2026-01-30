@@ -22,6 +22,7 @@ namespace winui_local_movie
     {
         private const double VideoCardMinWidth = 220;
         private const double VideoCardItemMargin = 5;
+        private static readonly TimeSpan LayoutUpdateDelay = TimeSpan.FromMilliseconds(100);
 
         private enum ViewMode
         {
@@ -38,6 +39,10 @@ namespace winui_local_movie
         private bool _isAscending = false;
         private readonly ObservableCollection<VideoModel> _tempVideos = new ObservableCollection<VideoModel>();
         private readonly HashSet<int> _tempVideoIds = new HashSet<int>();
+        private readonly DispatcherTimer _layoutUpdateTimer = new DispatcherTimer();
+        private ItemsWrapGrid? _videosItemsWrapGrid;
+        private double _pendingLayoutWidth;
+        private double _lastAppliedLayoutWidth;
 
         private ViewMode currentViewMode = ViewMode.All;
         private bool _isMultiSelectMode = false;
@@ -55,27 +60,53 @@ namespace winui_local_movie
             TempVideosListView.AddHandler(PointerPressedEvent, new PointerEventHandler(TempVideosListView_PointerPressed), true);
             TempVideosListView.ItemsSource = _tempVideos;
             UpdateTempListPlaceholder();
+            _layoutUpdateTimer.Interval = LayoutUpdateDelay;
+            _layoutUpdateTimer.Tick += LayoutUpdateTimer_Tick;
 
         }
 
         private void VideosGridView_Loaded(object sender, RoutedEventArgs e)
         {
-            UpdateVideosGridLayout();
+            _videosItemsWrapGrid ??= FindDescendant<ItemsWrapGrid>(VideosGridView);
+            ScheduleLayoutUpdate(VideosGridView.ActualWidth);
         }
 
         private void VideosGridView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            ScheduleLayoutUpdate(e.NewSize.Width);
+        }
+
+        private void LayoutUpdateTimer_Tick(object sender, object e)
+        {
+            _layoutUpdateTimer.Stop();
             UpdateVideosGridLayout();
         }
 
-        private void UpdateVideosGridLayout()
+        private void ScheduleLayoutUpdate(double width)
         {
-            if (VideosGridView == null || VideosGridView.ActualWidth <= 0)
+            if (width <= 0)
             {
                 return;
             }
 
-            double availableWidth = VideosGridView.ActualWidth;
+            _pendingLayoutWidth = width;
+            _layoutUpdateTimer.Stop();
+            _layoutUpdateTimer.Start();
+        }
+
+        private void UpdateVideosGridLayout()
+        {
+            if (_videosItemsWrapGrid == null || _pendingLayoutWidth <= 0)
+            {
+                return;
+            }
+
+            if (Math.Abs(_pendingLayoutWidth - _lastAppliedLayoutWidth) < 1)
+            {
+                return;
+            }
+
+            double availableWidth = _pendingLayoutWidth;
             double totalItemSpacing = VideoCardItemMargin * 2;
             int columns = Math.Max(1, (int)Math.Floor((availableWidth + totalItemSpacing) / (VideoCardMinWidth + totalItemSpacing)));
             double itemWidth = (availableWidth - (columns * totalItemSpacing)) / columns;
@@ -85,11 +116,8 @@ namespace winui_local_movie
                 itemWidth = VideoCardMinWidth;
             }
 
-            ItemsWrapGrid? itemsWrapGrid = FindDescendant<ItemsWrapGrid>(VideosGridView);
-            if (itemsWrapGrid != null)
-            {
-                itemsWrapGrid.ItemWidth = itemWidth;
-            }
+            _videosItemsWrapGrid.ItemWidth = itemWidth;
+            _lastAppliedLayoutWidth = availableWidth;
         }
 
         private static T? FindDescendant<T>(DependencyObject parent) where T : DependencyObject
