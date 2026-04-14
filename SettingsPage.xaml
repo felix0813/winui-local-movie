@@ -68,6 +68,50 @@
       <TextBlock x:Name="StatusText"
                  Text=""
                  Margin="0,8,0,0"/>
+
+      <TextBlock Text="云端备份"
+                 Style="{ThemeResource SubtitleTextBlockStyle}"
+                 Margin="0,16,0,0"/>
+      <TextBox x:Name="BackupServiceUrlTextBox"
+               Header="备份服务地址"
+               PlaceholderText="例如：http://localhost:8080"
+               TextChanged="BackupServiceUrlTextBox_TextChanged"/>
+      <StackPanel Orientation="Horizontal"
+                  Spacing="8">
+        <TextBox x:Name="BackupNameTextBox"
+                 Header="备份名称"
+                 PlaceholderText="请输入备份名称"
+                 Width="260"/>
+        <Button Content="上传备份"
+                VerticalAlignment="Bottom"
+                Click="UploadBackup_Click"/>
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal"
+                  Spacing="8">
+        <Button Content="刷新备份列表"
+                Click="RefreshBackups_Click"/>
+        <Button Content="下载并恢复选中备份"
+                Click="RestoreSelectedBackup_Click"/>
+        <Button Content="删除选中备份"
+                Click="DeleteSelectedBackup_Click"/>
+      </StackPanel>
+
+      <ListView x:Name="BackupsListView"
+                Margin="0,8,0,0"
+                Height="220"
+                SelectionMode="Single">
+        <ListView.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding DisplayName}"/>
+              <TextBlock Text="{Binding Details}"
+                         FontSize="12"
+                         Opacity="0.7"/>
+            </StackPanel>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+      </ListView>
     </StackPanel>
   </ScrollViewer>
 </Page>
