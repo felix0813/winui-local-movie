@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
@@ -32,11 +33,15 @@ namespace winui_local_movie
     public SettingsPage()
     {
       InitializeComponent();
+      LogInfo("初始化 SettingsPage。");
       _databaseService = ((App)Application.Current).DatabaseService;
 
       var localPath = ApplicationData.Current.LocalFolder.Path;
       _settingsFilePath = Path.Combine(localPath, "app_settings.json");
       _databaseFilePath = Path.Combine(localPath, "videos.db");
+      LogInfo($"本地路径: {localPath}");
+      LogInfo($"设置文件路径: {_settingsFilePath}");
+      LogInfo($"数据库文件路径: {_databaseFilePath}");
 
       _directories = LoadDirectoriesFromSettings();
       _backups = new List<BackupItem>();
@@ -46,6 +51,7 @@ namespace winui_local_movie
       BackupServiceUrlTextBox.Text = GetBackupServiceBaseUrl();
       ShowConfigFilePath();
       ShowLastScanTime();
+      LogInfo("SettingsPage 初始化完成。");
     }
 
     private void ShowConfigFilePath()
@@ -87,12 +93,15 @@ namespace winui_local_movie
       var folder = await folderPicker.PickSingleFolderAsync();
       if (folder == null)
       {
+        LogInfo("用户取消了目录选择。");
         return;
       }
 
+      LogInfo($"用户选择目录: {folder.Path}");
       SelectedDirectoryText.Text = folder.Path;
       if (_directories.Contains(folder.Path))
       {
+        LogInfo($"目录已存在，跳过添加: {folder.Path}");
         StatusText.Text = "目录已存在";
         return;
       }
@@ -102,27 +111,32 @@ namespace winui_local_movie
       DirectoriesListView.ItemsSource = null;
       DirectoriesListView.ItemsSource = _directories;
       StatusText.Text = "目录已添加";
+      LogInfo($"目录添加成功，当前目录数量: {_directories.Count}");
     }
 
     private void RemoveDirectory_Click(object sender, RoutedEventArgs e)
     {
       if (DirectoriesListView.SelectedItem is not string selectedDirectory)
       {
+        LogInfo("删除目录失败：未选择目录。");
         StatusText.Text = "请选择要删除的目录";
         return;
       }
 
+      LogInfo($"准备删除目录: {selectedDirectory}");
       _directories.Remove(selectedDirectory);
       SaveDirectoriesToSettings();
       DirectoriesListView.ItemsSource = null;
       DirectoriesListView.ItemsSource = _directories;
       StatusText.Text = "目录已删除";
+      LogInfo($"目录删除成功，当前目录数量: {_directories.Count}");
     }
 
     private async void ScanVideos_Click(object sender, RoutedEventArgs e)
     {
       if (_directories.Count == 0)
       {
+        LogInfo("扫描取消：目录列表为空。");
         StatusText.Text = "请先添加视频目录";
         return;
       }
@@ -136,14 +150,17 @@ namespace winui_local_movie
       ScanProgressBar.Visibility = Visibility.Visible;
       ScanProgressBar.IsIndeterminate = true;
       StatusText.Text = "正在扫描视频...";
+      LogInfo($"开始扫描视频，目录数量: {_directories.Count}");
 
       try
       {
         var result = await Task.Run(async () => await ScanVideosInBackgroundAsync());
         StatusText.Text = $"扫描完成，共添加 {result} 个视频";
+        LogInfo($"扫描完成，新增视频数量: {result}");
       }
       catch (Exception ex)
       {
+        LogError("扫描视频失败。", ex);
         StatusText.Text = $"扫描出错: {ex.Message}";
       }
       finally
@@ -159,6 +176,7 @@ namespace winui_local_movie
 
     private async Task<int> ScanVideosInBackgroundAsync()
     {
+      LogInfo("后台扫描任务启动。");
       var videoExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
       {
         ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"
@@ -171,6 +189,7 @@ namespace winui_local_movie
         .Where(Directory.Exists)
         .Select(directory => Task.Run(async () =>
         {
+          LogInfo($"扫描目录: {directory}");
           var files = Directory
             .EnumerateFiles(directory, "*.*", SearchOption.AllDirectories)
             .Where(file => videoExtensions.Contains(Path.GetExtension(file)));
@@ -185,6 +204,7 @@ namespace winui_local_movie
                 continue;
               }
 
+              LogInfo($"发现新视频文件: {file}");
               var duration = await GetVideoDurationAsync(file);
               var fileSizeMB = Math.Round(fileInfo.Length / 1024.0 / 1024.0, 0);
 
@@ -200,15 +220,17 @@ namespace winui_local_movie
 
               await _databaseService.AddVideoAsync(video);
               Interlocked.Increment(ref scannedVideos);
+              LogInfo($"已写入数据库: {video.Title} ({video.FilePath})");
             }
             catch (Exception ex)
             {
-              System.Diagnostics.Debug.WriteLine($"处理文件失败: {file}, 错误: {ex.Message}");
+              LogError($"处理文件失败: {file}", ex);
             }
           }
         }));
 
       await Task.WhenAll(tasks);
+      LogInfo($"后台扫描任务完成，总新增: {scannedVideos}");
       UpdateLastScanTime(DateTime.Now);
       return scannedVideos;
     }
@@ -216,6 +238,7 @@ namespace winui_local_movie
     private async void UploadBackup_Click(object sender, RoutedEventArgs e)
     {
       var backupName = BackupNameTextBox.Text?.Trim();
+      LogInfo($"开始上传备份，名称: {backupName}");
       if (string.IsNullOrWhiteSpace(backupName))
       {
         UpdateStatus("请输入备份名称后再上传。", isError: true);
@@ -254,16 +277,19 @@ namespace winui_local_movie
         if (!response.IsSuccessStatusCode)
         {
           var responseText = await response.Content.ReadAsStringAsync();
+          LogError($"上传备份失败，状态码: {(int)response.StatusCode}，响应: {responseText}");
           UpdateStatus($"上传失败({(int)response.StatusCode}): {responseText}", isError: true);
           return;
         }
 
+        LogInfo("备份上传成功。");
         UpdateStatus("备份上传成功。", isError: false);
         BackupNameTextBox.Text = string.Empty;
         await RefreshBackupsAsync();
       }
       catch (Exception ex)
       {
+        LogError("上传备份异常。", ex);
         UpdateStatus($"上传备份失败: {ex.Message}", isError: true);
       }
       finally
@@ -280,6 +306,7 @@ namespace winui_local_movie
     private async Task RefreshBackupsAsync()
     {
       var baseUrl = GetBackupServiceBaseUrl();
+      LogInfo($"开始刷新备份列表，服务地址: {baseUrl}");
 
       try
       {
@@ -289,6 +316,7 @@ namespace winui_local_movie
         if (!response.IsSuccessStatusCode)
         {
           var responseText = await response.Content.ReadAsStringAsync();
+          LogError($"刷新备份失败，状态码: {(int)response.StatusCode}，响应: {responseText}");
           UpdateStatus($"刷新备份列表失败({(int)response.StatusCode}): {responseText}", isError: true);
           return;
         }
@@ -303,9 +331,11 @@ namespace winui_local_movie
         BackupsListView.ItemsSource = _backups;
 
         UpdateStatus($"已加载 {_backups.Count} 条备份记录。", isError: false);
+        LogInfo($"备份列表刷新成功，条数: {_backups.Count}");
       }
       catch (Exception ex)
       {
+        LogError("加载备份列表异常。", ex);
         UpdateStatus($"加载备份列表失败: {ex.Message}", isError: true);
       }
     }
@@ -319,6 +349,7 @@ namespace winui_local_movie
       }
 
       var baseUrl = GetBackupServiceBaseUrl();
+      LogInfo($"开始恢复备份，ID: {selected.Id}，服务地址: {baseUrl}");
       var tempZipPath = Path.Combine(Path.GetTempPath(), $"localmovie-backup-{selected.Id}-{Guid.NewGuid():N}.zip");
       var tempExtractDir = Path.Combine(Path.GetTempPath(), $"localmovie-restore-{Guid.NewGuid():N}");
 
@@ -330,6 +361,7 @@ namespace winui_local_movie
         if (!response.IsSuccessStatusCode)
         {
           var responseText = await response.Content.ReadAsStringAsync();
+          LogError($"下载备份失败，状态码: {(int)response.StatusCode}，响应: {responseText}");
           UpdateStatus($"下载备份失败({(int)response.StatusCode}): {responseText}", isError: true);
           return;
         }
@@ -356,6 +388,7 @@ namespace winui_local_movie
 
         if (string.IsNullOrWhiteSpace(sqlitePath) || string.IsNullOrWhiteSpace(jsonPath))
         {
+          LogError("恢复失败：备份包缺少 sqlite 或 json 文件。");
           UpdateStatus("备份包中缺少 sqlite 或 json 文件，无法恢复。", isError: true);
           return;
         }
@@ -370,9 +403,11 @@ namespace winui_local_movie
         ShowLastScanTime();
 
         UpdateStatus("备份已恢复成功。建议重启应用以重新加载数据库连接。", isError: false);
+        LogInfo("备份恢复完成。");
       }
       catch (Exception ex)
       {
+        LogError("恢复备份异常。", ex);
         UpdateStatus($"恢复备份失败: {ex.Message}", isError: true);
       }
       finally
@@ -391,6 +426,7 @@ namespace winui_local_movie
       }
 
       var baseUrl = GetBackupServiceBaseUrl();
+      LogInfo($"开始删除备份，ID: {selected.Id}，服务地址: {baseUrl}");
       try
       {
         using var http = CreateBackupHttpClient(baseUrl);
@@ -399,21 +435,25 @@ namespace winui_local_movie
         if (!response.IsSuccessStatusCode)
         {
           var responseText = await response.Content.ReadAsStringAsync();
+          LogError($"删除备份失败，状态码: {(int)response.StatusCode}，响应: {responseText}");
           UpdateStatus($"删除备份失败({(int)response.StatusCode}): {responseText}", isError: true);
           return;
         }
 
         UpdateStatus($"备份 {selected.DisplayName} 已删除。", isError: false);
+        LogInfo($"删除备份成功: {selected.DisplayName}");
         await RefreshBackupsAsync();
       }
       catch (Exception ex)
       {
+        LogError("删除备份异常。", ex);
         UpdateStatus($"删除备份失败: {ex.Message}", isError: true);
       }
     }
 
     private void BackupServiceUrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+      LogInfo($"备份服务地址变更为: {BackupServiceUrlTextBox.Text?.Trim()}");
       SaveBackupServiceUrlToSettings(BackupServiceUrlTextBox.Text?.Trim());
     }
 
@@ -439,7 +479,7 @@ namespace winui_local_movie
       }
       catch (Exception ex)
       {
-        System.Diagnostics.Debug.WriteLine($"加载目录设置失败: {ex.Message}");
+        LogError("加载目录设置失败。", ex);
         DispatcherQueue.TryEnqueue(() => { StatusText.Text = $"加载设置失败: {ex.Message}"; });
       }
 
@@ -464,7 +504,7 @@ namespace winui_local_movie
       }
       catch (Exception ex)
       {
-        System.Diagnostics.Debug.WriteLine($"加载扫描时间失败: {ex.Message}");
+        LogError("加载扫描时间失败。", ex);
         DispatcherQueue.TryEnqueue(() => { StatusText.Text = $"加载设置失败: {ex.Message}"; });
       }
 
@@ -481,6 +521,7 @@ namespace winui_local_movie
       }
       catch (Exception ex)
       {
+        LogError("保存目录设置失败。", ex);
         DispatcherQueue.TryEnqueue(() => { StatusText.Text = $"保存设置失败: {ex.Message}"; });
       }
     }
@@ -496,7 +537,7 @@ namespace winui_local_movie
       }
       catch (Exception ex)
       {
-        System.Diagnostics.Debug.WriteLine($"更新上次扫描时间失败: {ex.Message}");
+        LogError("更新上次扫描时间失败。", ex);
       }
     }
 
@@ -516,7 +557,7 @@ namespace winui_local_movie
         }
         catch (Exception ex)
         {
-          System.Diagnostics.Debug.WriteLine($"加载现有设置失败: {ex.Message}");
+          LogError("加载现有设置失败。", ex);
         }
       }
 
@@ -713,6 +754,7 @@ namespace winui_local_movie
       });
 
       File.WriteAllText(_settingsFilePath, json);
+      LogInfo("设置文件已写入。");
     }
 
     private static string? GetSettingString(Dictionary<string, object> settings, string key)
@@ -734,6 +776,29 @@ namespace winui_local_movie
     {
       var prefix = isError ? "[备份错误]" : "[备份]";
       StatusText.Text = $"{prefix} {message}";
+      if (isError)
+      {
+        LogError(message);
+      }
+      else
+      {
+        LogInfo(message);
+      }
+    }
+
+    private static void LogInfo(string message)
+    {
+      var log = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [SettingsPage] [INFO] {message}";
+      Console.WriteLine(log);
+      Debug.WriteLine(log);
+    }
+
+    private static void LogError(string message, Exception? ex = null)
+    {
+      var detail = ex == null ? message : $"{message} {ex}";
+      var log = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [SettingsPage] [ERROR] {detail}";
+      Console.WriteLine(log);
+      Debug.WriteLine(log);
     }
 
     private sealed class BackupItem
