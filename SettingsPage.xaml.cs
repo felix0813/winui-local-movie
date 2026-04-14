@@ -230,14 +230,17 @@ namespace winui_local_movie
 
       EnsureSettingsFileExists();
       var baseUrl = GetBackupServiceBaseUrl();
+      var tempDatabaseCopyPath = Path.Combine(Path.GetTempPath(), $"videos-backup-{Guid.NewGuid():N}.db");
 
       try
       {
+        await CopyDatabaseForBackupAsync(_databaseFilePath, tempDatabaseCopyPath);
+
         using var http = CreateBackupHttpClient(baseUrl);
         using var form = new MultipartFormDataContent();
         form.Add(new StringContent(backupName, Encoding.UTF8), "name");
 
-        await using var sqliteStream = File.OpenRead(_databaseFilePath);
+        await using var sqliteStream = File.OpenRead(tempDatabaseCopyPath);
         var sqliteContent = new StreamContent(sqliteStream);
         sqliteContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
         form.Add(sqliteContent, "sqlite", Path.GetFileName(_databaseFilePath));
@@ -262,6 +265,10 @@ namespace winui_local_movie
       catch (Exception ex)
       {
         UpdateStatus($"上传备份失败: {ex.Message}", isError: true);
+      }
+      finally
+      {
+        TryDeleteFile(tempDatabaseCopyPath);
       }
     }
 
@@ -634,6 +641,40 @@ namespace winui_local_movie
       catch
       {
       }
+    }
+
+    private static async Task CopyDatabaseForBackupAsync(string sourcePath, string destinationPath)
+    {
+      const int maxAttempts = 5;
+      var delay = TimeSpan.FromMilliseconds(150);
+
+      for (var attempt = 1; attempt <= maxAttempts; attempt++)
+      {
+        try
+        {
+          await using var source = new FileStream(
+            sourcePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete);
+
+          await using var destination = new FileStream(
+            destinationPath,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.None);
+
+          await source.CopyToAsync(destination);
+          await destination.FlushAsync();
+          return;
+        }
+        catch (IOException) when (attempt < maxAttempts)
+        {
+          await Task.Delay(delay);
+        }
+      }
+
+      throw new IOException("数据库文件当前被占用，请稍后重试备份。");
     }
 
     private string GetBackupServiceBaseUrl()
