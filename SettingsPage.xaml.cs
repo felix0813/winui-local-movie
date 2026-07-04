@@ -235,6 +235,138 @@ namespace winui_local_movie
       return scannedVideos;
     }
 
+
+    private async void ArchiveOldVideos_Click(object sender, RoutedEventArgs e)
+    {
+      if (_directories.Count == 0)
+      {
+        LogInfo("归档取消：目录列表为空。");
+        StatusText.Text = "请先添加视频目录";
+        return;
+      }
+
+      var archiveButton = sender as Button;
+      if (archiveButton != null)
+      {
+        archiveButton.IsEnabled = false;
+      }
+
+      ScanProgressBar.Visibility = Visibility.Visible;
+      ScanProgressBar.IsIndeterminate = true;
+      StatusText.Text = "正在归档6个月前的视频...";
+      LogInfo($"开始归档旧视频，目录数量: {_directories.Count}");
+
+      try
+      {
+        var result = await Task.Run(async () => await ArchiveOldVideosInBackgroundAsync());
+        StatusText.Text = $"归档完成，成功 {result.ArchivedCount} 个，失败 {result.FailedCount} 个";
+        LogInfo($"归档完成，成功: {result.ArchivedCount}，失败: {result.FailedCount}");
+      }
+      catch (Exception ex)
+      {
+        LogError("归档旧视频失败。", ex);
+        StatusText.Text = $"归档出错: {ex.Message}";
+      }
+      finally
+      {
+        ScanProgressBar.IsIndeterminate = false;
+        ScanProgressBar.Visibility = Visibility.Collapsed;
+        if (archiveButton != null)
+        {
+          archiveButton.IsEnabled = true;
+        }
+      }
+    }
+
+    private async Task<ArchiveResult> ArchiveOldVideosInBackgroundAsync()
+    {
+      var videoExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+      {
+        ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"
+      };
+
+      var cutoffDate = DateTime.Now.AddMonths(-3);
+      var result = new ArchiveResult();
+      LogInfo($"归档截止时间: {cutoffDate:yyyy-MM-dd HH:mm:ss}");
+
+      foreach (var directory in _directories.Where(Directory.Exists))
+      {
+        LogInfo($"开始归档目录（不递归）: {directory}");
+        var files = Directory
+          .EnumerateFiles(directory, "*.*", SearchOption.TopDirectoryOnly)
+          .Where(file => videoExtensions.Contains(Path.GetExtension(file)))
+          .ToList();
+
+        foreach (var file in files)
+        {
+          try
+          {
+            var fileInfo = new FileInfo(file);
+            var fileDate = fileInfo.CreationTime == DateTime.MinValue ? fileInfo.LastWriteTime : fileInfo.CreationTime;
+                        LogInfo($"比较时间 - 文件: {file}, 用于比较的时间: {fileDate:yyyy-MM-dd HH:mm:ss}");
+                        if (fileDate > cutoffDate)
+            {
+              continue;
+            }
+
+            var archiveFolder = Path.Combine(directory, fileDate.ToString("yyyy-MM", CultureInfo.InvariantCulture));
+            Directory.CreateDirectory(archiveFolder);
+
+            var destinationPath = GetAvailableDestinationPath(Path.Combine(archiveFolder, fileInfo.Name));
+            var oldThumbnailPath = Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(file)}-poster.jpg");
+            var newThumbnailPath = File.Exists(oldThumbnailPath)
+              ? GetAvailableDestinationPath(Path.Combine(archiveFolder, Path.GetFileName(oldThumbnailPath)))
+              : null;
+
+            LogInfo($"归档视频: {file} -> {destinationPath}");
+            File.Move(file, destinationPath);
+
+            if (!string.IsNullOrWhiteSpace(newThumbnailPath) && File.Exists(oldThumbnailPath))
+            {
+              LogInfo($"归档封面: {oldThumbnailPath} -> {newThumbnailPath}");
+              File.Move(oldThumbnailPath, newThumbnailPath);
+            }
+
+            var updatedRows = await _databaseService.UpdateVideoPathByFilePathAsync(file, destinationPath, newThumbnailPath);
+            if (updatedRows == 0)
+            {
+              LogInfo($"归档视频未匹配到数据库记录: {file}");
+            }
+
+            result.ArchivedCount++;
+          }
+          catch (Exception ex)
+          {
+            result.FailedCount++;
+            LogError($"归档文件失败: {file}", ex);
+          }
+        }
+      }
+
+      return result;
+    }
+
+    private static string GetAvailableDestinationPath(string destinationPath)
+    {
+      if (!File.Exists(destinationPath))
+      {
+        return destinationPath;
+      }
+
+      var directory = Path.GetDirectoryName(destinationPath) ?? string.Empty;
+      var fileName = Path.GetFileNameWithoutExtension(destinationPath);
+      var extension = Path.GetExtension(destinationPath);
+      var index = 1;
+      string candidate;
+      do
+      {
+        candidate = Path.Combine(directory, $"{fileName} ({index}){extension}");
+        index++;
+      } while (File.Exists(candidate));
+
+      return candidate;
+    }
+
     private async void UploadBackup_Click(object sender, RoutedEventArgs e)
     {
       var backupName = BackupNameTextBox.Text?.Trim();
@@ -799,6 +931,12 @@ namespace winui_local_movie
       var log = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [SettingsPage] [ERROR] {detail}";
       Console.WriteLine(log);
       Debug.WriteLine(log);
+    }
+
+    private sealed class ArchiveResult
+    {
+      public int ArchivedCount { get; set; }
+      public int FailedCount { get; set; }
     }
 
     private sealed class BackupItem
