@@ -54,7 +54,7 @@
                 Click="RemoveDirectory_Click"/>
         <Button Content="扫描视频"
                 Click="ScanVideos_Click"/>
-        <Button Content="归档6个月前视频"
+        <Button Content="归档3个月前视频"
                 Click="ArchiveOldVideos_Click"/>
       </StackPanel>
       <TextBlock Text="上次扫描时间"

@@ -285,7 +285,7 @@ namespace winui_local_movie
         ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"
       };
 
-      var cutoffDate = DateTime.Now.AddMonths(-6);
+      var cutoffDate = DateTime.Now.AddMonths(-3);
       var result = new ArchiveResult();
       LogInfo($"归档截止时间: {cutoffDate:yyyy-MM-dd HH:mm:ss}");
 
@@ -303,7 +303,8 @@ namespace winui_local_movie
           {
             var fileInfo = new FileInfo(file);
             var fileDate = fileInfo.CreationTime == DateTime.MinValue ? fileInfo.LastWriteTime : fileInfo.CreationTime;
-            if (fileDate > cutoffDate)
+                        LogInfo($"比较时间 - 文件: {file}, 用于比较的时间: {fileDate:yyyy-MM-dd HH:mm:ss}");
+                        if (fileDate > cutoffDate)
             {
               continue;
             }
