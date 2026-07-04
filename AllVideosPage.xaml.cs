@@ -25,6 +25,8 @@ namespace winui_local_movie
         private const double VideoCardMinWidth = 220;
         private const double VideoCardItemMargin = 5;
         private static readonly TimeSpan LayoutUpdateDelay = TimeSpan.FromMilliseconds(100);
+        private const long DefaultThumbnailApproxSizeBytes = 1_635_778;
+        private const double DefaultThumbnailSizeTolerance = 0.25;
 
         private enum ViewMode
         {
@@ -585,9 +587,19 @@ namespace winui_local_movie
                 string directory = Path.GetDirectoryName(videoPath);
                 string thumbnailPath = Path.Combine(directory, $"{fileNameWithoutExtension}-poster.jpg");
 
-                // 如果缩略图已存在，直接返回路径
+                // 如果缩略图已存在，先判断是否为无效的系统默认图标；无效则删除并重新生成。
                 if (File.Exists(thumbnailPath))
-                    return thumbnailPath;
+                {
+                    if (await IsDefaultVideoIconThumbnailAsync(thumbnailPath))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"发现已有缩略图疑似系统默认视频图标，删除后重新生成: {thumbnailPath}");
+                        File.Delete(thumbnailPath);
+                    }
+                    else
+                    {
+                        return thumbnailPath;
+                    }
+                }
 
                 // 使用 Windows.Storage API 生成缩略图
                 var storageFile = await StorageFile.GetFileFromPathAsync(videoPath);
@@ -631,10 +643,31 @@ namespace winui_local_movie
         }
 
 
+        private static bool IsNearDefaultThumbnailSize(string thumbnailPath)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(thumbnailPath);
+                var lowerBound = DefaultThumbnailApproxSizeBytes * (1 - DefaultThumbnailSizeTolerance);
+                var upperBound = DefaultThumbnailApproxSizeBytes * (1 + DefaultThumbnailSizeTolerance);
+                return fileInfo.Length >= lowerBound && fileInfo.Length <= upperBound;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"读取缩略图大小失败: {ex.Message}");
+                return false;
+            }
+        }
+
         private static async Task<bool> IsDefaultVideoIconThumbnailAsync(string thumbnailPath)
         {
             try
             {
+                if (!IsNearDefaultThumbnailSize(thumbnailPath))
+                {
+                    return false;
+                }
+
                 var file = await StorageFile.GetFileFromPathAsync(thumbnailPath);
                 using var stream = await file.OpenReadAsync();
                 var decoder = await BitmapDecoder.CreateAsync(stream);
