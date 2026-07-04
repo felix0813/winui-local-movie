@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,6 +16,7 @@ using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
+using Windows.Graphics.Imaging;
 
 namespace winui_local_movie
 {
@@ -608,6 +610,13 @@ namespace winui_local_movie
                         await RandomAccessStream.CopyAsync(inputStream, outputStream);
                     }
 
+                    if (await IsDefaultVideoIconThumbnailAsync(thumbnailPath))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"缩略图疑似系统默认视频图标，已删除: {thumbnailPath}");
+                        File.Delete(thumbnailPath);
+                        return null;
+                    }
+
                     return thumbnailPath;
                 }
             }
@@ -619,6 +628,71 @@ namespace winui_local_movie
             }
 
             return null;
+        }
+
+
+        private static async Task<bool> IsDefaultVideoIconThumbnailAsync(string thumbnailPath)
+        {
+            try
+            {
+                var file = await StorageFile.GetFileFromPathAsync(thumbnailPath);
+                using var stream = await file.OpenReadAsync();
+                var decoder = await BitmapDecoder.CreateAsync(stream);
+                var transform = new BitmapTransform
+                {
+                    ScaledWidth = Math.Min(decoder.PixelWidth, 64),
+                    ScaledHeight = Math.Min(decoder.PixelHeight, 64)
+                };
+
+                var pixelData = await decoder.GetPixelDataAsync(
+                    BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Premultiplied,
+                    transform,
+                    ExifOrientationMode.IgnoreExifOrientation,
+                    ColorManagementMode.DoNotColorManage);
+
+                var pixels = pixelData.DetachPixelData();
+                var pixelCount = pixels.Length / 4;
+                if (pixelCount == 0)
+                {
+                    return true;
+                }
+
+                var blackCount = 0;
+                var whiteCount = 0;
+                var purpleCount = 0;
+
+                for (var i = 0; i < pixels.Length; i += 4)
+                {
+                    var b = pixels[i];
+                    var g = pixels[i + 1];
+                    var r = pixels[i + 2];
+
+                    if (r < 35 && g < 35 && b < 35)
+                    {
+                        blackCount++;
+                    }
+                    else if (r > 220 && g > 220 && b > 220)
+                    {
+                        whiteCount++;
+                    }
+                    else if (r >= 70 && r <= 130 && g >= 35 && g <= 95 && b >= 170)
+                    {
+                        purpleCount++;
+                    }
+                }
+
+                var blackRatio = blackCount / (double)pixelCount;
+                var whiteRatio = whiteCount / (double)pixelCount;
+                var purpleRatio = purpleCount / (double)pixelCount;
+
+                return blackRatio > 0.18 && whiteRatio > 0.18 && purpleRatio > 0.06;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"检测默认缩略图失败: {ex.Message}");
+                return false;
+            }
         }
 
         private async Task<TimeSpan> GetVideoDurationAsync(string filePath)
@@ -1308,6 +1382,7 @@ namespace winui_local_movie
             ExitMultiSelectButton.Visibility = Visibility.Visible;
 
             // 显示批量操作按钮
+            SelectCurrentPageButton.Visibility = Visibility.Visible;
             BulkDeleteButton.Visibility = Visibility.Visible;
             BulkRefreshMetadataButton.Visibility = Visibility.Visible;
 
@@ -1341,6 +1416,8 @@ namespace winui_local_movie
             ExitMultiSelectButton.Visibility = Visibility.Collapsed;
 
             // 隐藏批量操作按钮
+            SelectCurrentPageButton.Visibility = Visibility.Collapsed;
+            SelectCurrentPageButton.Content = "全选本页";
             BulkDeleteButton.Visibility = Visibility.Collapsed;
             BulkRefreshMetadataButton.Visibility = Visibility.Collapsed;
 
@@ -1388,6 +1465,10 @@ namespace winui_local_movie
                     }
                 }
 
+                SelectCurrentPageButton.Content = VideosGridView.SelectedItems.Count == VideosGridView.Items.Count
+                    ? "取消全选"
+                    : "全选本页";
+
                 // 强制更新所有容器的样式
                 for (int i = 0; i < VideosGridView.Items.Count; i++)
                 {
@@ -1398,6 +1479,24 @@ namespace winui_local_movie
                 }
             }
         }
+        private void SelectCurrentPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isMultiSelectMode || VideosGridView.Items.Count == 0)
+                return;
+
+            if (VideosGridView.SelectedItems.Count == VideosGridView.Items.Count)
+            {
+                VideosGridView.DeselectRange(new ItemIndexRange(0, (uint)VideosGridView.Items.Count));
+                _selectedVideos.Clear();
+                SelectCurrentPageButton.Content = "全选本页";
+                return;
+            }
+
+            VideosGridView.SelectRange(new ItemIndexRange(0, (uint)VideosGridView.Items.Count));
+            _selectedVideos = VideosGridView.Items.OfType<VideoModel>().ToList();
+            SelectCurrentPageButton.Content = "取消全选";
+        }
+
         // 批量删除按钮点击事件
         private async void BulkDeleteButton_Click(object sender, RoutedEventArgs e)
         {
