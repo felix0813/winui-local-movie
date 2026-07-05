@@ -18,6 +18,7 @@ namespace winui_local_movie
 
     public long FileSize { get; set; }
     public DateTime? CreationDate { get; set; }
+    public DateTime? LastWatched { get; set; }
 
     public Microsoft.UI.Xaml.Media.ImageSource? GetThumbnailPath(string videoFilePath)
     {

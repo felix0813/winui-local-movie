@@ -28,7 +28,8 @@ namespace winui_local_movie
         {
             All,
             Favorites,
-            WatchLater
+            WatchLater,
+            NotWatched
         }
         private readonly DatabaseService _databaseService;
         private int _currentPage = 1;
@@ -54,6 +55,7 @@ namespace winui_local_movie
             this.InitializeComponent();
             _databaseService = ((App)Application.Current).DatabaseService;
             LoadVideosAsync();
+            LoadNotWatchedThreshold();
 
             VideosGridView.ContainerContentChanging += VideosGridView_ContainerContentChanging;
             VideosGridView.Loaded += VideosGridView_Loaded;
@@ -197,6 +199,10 @@ namespace winui_local_movie
                 case "WatchLater":
                     currentViewMode = ViewMode.WatchLater;
                     break;
+                case "NotWatched":
+                    currentViewMode = ViewMode.NotWatched;
+                    SaveNotWatchedThreshold(GetSelectedNotWatchedDays());
+                    break;
             }
 
             // 更新按钮样式
@@ -215,6 +221,10 @@ namespace winui_local_movie
             AllVideosButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
             FavoritesButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
             WatchLaterButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
+            NotWatchedButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
+
+            // 天数选择器仅在"很久未看"模式下可见
+            NotWatchedDaysComboBox.Visibility = activeTag == "NotWatched" ? Visibility.Visible : Visibility.Collapsed;
 
             // 设置活动按钮样式
             switch (activeTag)
@@ -227,6 +237,9 @@ namespace winui_local_movie
                     break;
                 case "WatchLater":
                     WatchLaterButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
+                    break;
+                case "NotWatched":
+                    NotWatchedButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
                     break;
             }
         }
@@ -276,6 +289,17 @@ namespace winui_local_movie
                             (_currentPage - 1) * PageSize,
                             PageSize);
                         totalCount = await _databaseService.GetWatchLaterVideosAsync().ContinueWith(t => t.Result.Count);
+                        break;
+
+                    case ViewMode.NotWatched:
+                        var notWatchedDays = GetSelectedNotWatchedDays();
+                        videos = await _databaseService.GetNotWatchedVideosSortedAsync(
+                            notWatchedDays,
+                            _currentSortProperty,
+                            _isAscending,
+                            (_currentPage - 1) * PageSize,
+                            PageSize);
+                        totalCount = await _databaseService.GetNotWatchedVideosCountAsync(notWatchedDays);
                         break;
 
                     default: // ViewMode.All
@@ -667,6 +691,7 @@ namespace winui_local_movie
             AddDetailRow(stackPanel, "加入时间:", video.DateAdded.ToString("yyyy-MM-dd HH:mm:ss"));
             AddDetailRow(stackPanel, "收藏状态:", video.IsFavorite ? "是" : "否");
             AddDetailRow(stackPanel, "稍后观看:", video.IsWatchLater ? "是" : "否");
+            AddDetailRow(stackPanel, "上次观看:", video.LastWatched?.ToString("yyyy-MM-dd HH:mm:ss") ?? "从未观看");
 
             // 创建并配置弹窗
             var dialog = new ContentDialog
@@ -1024,6 +1049,11 @@ namespace winui_local_movie
                 // 使用系统默认程序打开视频
                 var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(video.FilePath);
                 await Windows.System.Launcher.LaunchFileAsync(file);
+
+                // 记录上次观看时间
+                var now = DateTime.Now;
+                video.LastWatched = now;
+                await _databaseService.UpdateLastWatchedAsync(video.Id, now);
             }
             catch (Exception ex)
             {
@@ -1555,6 +1585,92 @@ namespace winui_local_movie
         }
         private string currentSearchTerm = "";
         private bool isSearching = false;
+
+        // 很久未看 - 辅助方法
+        private int GetSelectedNotWatchedDays()
+        {
+            if (NotWatchedDaysComboBox.SelectedItem is ComboBoxItem item &&
+                int.TryParse(item.Tag?.ToString(), out int days))
+                return days;
+            return 90;
+        }
+
+        private void SaveNotWatchedThreshold(int days)
+        {
+            try
+            {
+                var localFolder = ApplicationData.Current.LocalFolder.Path;
+                var settingsPath = Path.Combine(localFolder, "app_settings.json");
+                Dictionary<string, object> settings;
+                if (File.Exists(settingsPath))
+                {
+                    var json = File.ReadAllText(settingsPath);
+                    settings = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json,
+                        new System.Text.Json.JsonSerializerOptions { TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver() })
+                        ?? new Dictionary<string, object>();
+                }
+                else
+                {
+                    settings = new Dictionary<string, object>();
+                }
+                settings["NotWatchedThresholdDays"] = days.ToString();
+                var outputJson = System.Text.Json.JsonSerializer.Serialize(settings,
+                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true, TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver() });
+                File.WriteAllText(settingsPath, outputJson);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"保存未看天数阈值失败: {ex.Message}");
+            }
+        }
+
+        private void LoadNotWatchedThreshold()
+        {
+            try
+            {
+                var localFolder = ApplicationData.Current.LocalFolder.Path;
+                var settingsPath = Path.Combine(localFolder, "app_settings.json");
+                if (!File.Exists(settingsPath)) return;
+                var json = File.ReadAllText(settingsPath);
+                var settings = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(json,
+                    new System.Text.Json.JsonSerializerOptions { TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver() });
+                if (settings != null && settings.TryGetValue("NotWatchedThresholdDays", out var value))
+                {
+                    var daysStr = value is System.Text.Json.JsonElement el ? el.ToString() : value.ToString();
+                    if (int.TryParse(daysStr, out int days))
+                    {
+                        foreach (var item in NotWatchedDaysComboBox.Items)
+                        {
+                            if (item is ComboBoxItem cbi && cbi.Tag?.ToString() == days.ToString())
+                            {
+                                NotWatchedDaysComboBox.SelectedItem = item;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载未看天数阈值失败: {ex.Message}");
+            }
+        }
+
+        private async void NotWatchedDaysComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (NotWatchedDaysComboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                if (int.TryParse(selectedItem.Tag?.ToString(), out int days))
+                {
+                    SaveNotWatchedThreshold(days);
+                }
+                if (currentViewMode == ViewMode.NotWatched)
+                {
+                    _currentPage = 1;
+                    await LoadVideosAsync();
+                }
+            }
+        }
 
         // 搜索框文本变化事件处理
         private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

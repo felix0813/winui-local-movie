@@ -51,6 +51,25 @@
                   Click="FilterButton_Click"
                   Tag="WatchLater"
                   Margin="5,0"/>
+                    <Button x:Name="NotWatchedButton"
+                  Content="很久未看"
+                  Click="FilterButton_Click"
+                  Tag="NotWatched"
+                  Margin="5,0"/>
+                    <ComboBox x:Name="NotWatchedDaysComboBox"
+                  Header="未看天数"
+                  SelectionChanged="NotWatchedDaysComboBox_SelectionChanged"
+                  MinWidth="100"
+                  Margin="5,0"
+                  Visibility="Collapsed"
+                  VerticalAlignment="Bottom"
+                  SelectedIndex="2">
+                        <ComboBoxItem Content="30天" Tag="30"/>
+                        <ComboBoxItem Content="60天" Tag="60"/>
+                        <ComboBoxItem Content="90天" Tag="90"/>
+                        <ComboBoxItem Content="180天" Tag="180"/>
+                        <ComboBoxItem Content="365天" Tag="365"/>
+                    </ComboBox>
                     <Button x:Name="MultiSelectButton"
                   Content="多选"
                   Click="MultiSelectButton_Click"

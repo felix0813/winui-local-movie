@@ -69,6 +69,21 @@
                  Text=""
                  Margin="0,8,0,0"/>
 
+      <TextBlock Text="很久未看设置"
+                 Style="{ThemeResource SubtitleTextBlockStyle}"
+                 Margin="0,16,0,0"/>
+      <ComboBox x:Name="NotWatchedThresholdComboBox"
+                Header="默认未看天数阈值"
+                SelectionChanged="NotWatchedThresholdComboBox_SelectionChanged"
+                MinWidth="120"
+                SelectedIndex="2">
+        <ComboBoxItem Content="30天" Tag="30"/>
+        <ComboBoxItem Content="60天" Tag="60"/>
+        <ComboBoxItem Content="90天" Tag="90"/>
+        <ComboBoxItem Content="180天" Tag="180"/>
+        <ComboBoxItem Content="365天" Tag="365"/>
+      </ComboBox>
+
       <TextBlock Text="云端备份"
                  Style="{ThemeResource SubtitleTextBlockStyle}"
                  Margin="0,16,0,0"/>

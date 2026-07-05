@@ -51,6 +51,7 @@ namespace winui_local_movie
       BackupServiceUrlTextBox.Text = GetBackupServiceBaseUrl();
       ShowConfigFilePath();
       ShowLastScanTime();
+      LoadNotWatchedThreshold();
       LogInfo("SettingsPage 初始化完成。");
     }
 
@@ -455,6 +456,36 @@ namespace winui_local_movie
     {
       LogInfo($"备份服务地址变更为: {BackupServiceUrlTextBox.Text?.Trim()}");
       SaveBackupServiceUrlToSettings(BackupServiceUrlTextBox.Text?.Trim());
+    }
+
+    private void LoadNotWatchedThreshold()
+    {
+      var settings = LoadExistingSettings();
+      var thresholdString = GetSettingString(settings, "NotWatchedThresholdDays");
+      if (int.TryParse(thresholdString, out var days))
+      {
+        foreach (var item in NotWatchedThresholdComboBox.Items)
+        {
+          if (item is ComboBoxItem cbi && cbi.Tag?.ToString() == days.ToString())
+          {
+            NotWatchedThresholdComboBox.SelectedItem = item;
+            break;
+          }
+        }
+      }
+    }
+
+    private void NotWatchedThresholdComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      // 防止 XAML 解析阶段（构造函数未完成时）触发导致 path 为 null
+      if (string.IsNullOrEmpty(_settingsFilePath)) return;
+
+      if (NotWatchedThresholdComboBox.SelectedItem is ComboBoxItem selectedItem)
+      {
+        var settings = LoadExistingSettings();
+        settings["NotWatchedThresholdDays"] = selectedItem.Tag.ToString();
+        SaveSettings(settings);
+      }
     }
 
     private List<string> LoadDirectoriesFromSettings()

@@ -43,7 +43,47 @@ namespace winui_local_movie
     CreationDate TEXT
     )";
       command.ExecuteNonQuery();
+
+      // 迁移：为现有数据库添加 LastWatched 列
+      var checkCmd = connection.CreateCommand();
+      checkCmd.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Videos') WHERE name='LastWatched'";
+      var columnExists = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
+      if (!columnExists)
+      {
+        var alterCmd = connection.CreateCommand();
+        alterCmd.CommandText = "ALTER TABLE Videos ADD COLUMN LastWatched TEXT";
+        try { alterCmd.ExecuteNonQuery(); } catch { }
+      }
+
       connection.Close();
+    }
+
+    /// <summary>
+    /// 安全地从 SQLite reader 中读取可空 DateTime 列。
+    /// 使用静态缓存避免每行都尝试 GetOrdinal + 异常捕获，只在首次访问时检测列是否存在。
+    /// </summary>
+    private static readonly Dictionary<(object, string), bool> _columnExistsCache = new();
+
+    private static DateTime? TryGetDateTime(Microsoft.Data.Sqlite.SqliteDataReader reader, string column)
+    {
+      var key = ((object)reader, column);
+      if (!_columnExistsCache.TryGetValue(key, out bool exists))
+      {
+        try
+        {
+          reader.GetOrdinal(column);
+          exists = true;
+        }
+        catch
+        {
+          exists = false;
+        }
+        _columnExistsCache[key] = exists;
+      }
+      if (!exists) return null;
+
+      int ordinal = reader.GetOrdinal(column);
+      return reader.IsDBNull(ordinal) ? null : DateTime.Parse(reader.GetString(ordinal));
     }
 
     // 在 DatabaseService.cs 中更新 AddVideoAsync 方法
@@ -83,7 +123,7 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = @"
-                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate
+                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate, LastWatched
                 FROM Videos 
                 ORDER BY DateAdded DESC 
                 LIMIT @Count";
@@ -104,6 +144,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
 
         });
       }
@@ -120,7 +161,7 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = @"
-                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate
+                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate, LastWatched
                 FROM Videos 
                 WHERE IsWatchLater = 1
                 ORDER BY DateAdded DESC";
@@ -140,6 +181,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
 
         });
       }
@@ -156,7 +198,7 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = @"
-                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate
+                SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate, LastWatched
                 FROM Videos 
                 WHERE IsFavorite = 1
                 ORDER BY DateAdded DESC";
@@ -176,6 +218,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
 
         });
       }
@@ -219,6 +262,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
         });
       }
 
@@ -260,6 +304,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
         });
       }
 
@@ -308,6 +353,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
 
         });
       }
@@ -450,6 +496,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
         });
       }
 
@@ -493,6 +540,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
         });
       }
 
@@ -536,6 +584,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
         });
       }
 
@@ -579,6 +628,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
         });
       }
 
@@ -622,6 +672,7 @@ namespace winui_local_movie
           IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
           FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
           CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
         });
       }
 
@@ -643,5 +694,75 @@ namespace winui_local_movie
     var result = await command.ExecuteScalarAsync();
     return Convert.ToInt32(result);
 }
+
+    public async Task UpdateLastWatchedAsync(int videoId, DateTime lastWatched)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = "UPDATE Videos SET LastWatched = @LastWatched WHERE Id = @Id";
+      command.Parameters.AddWithValue("@LastWatched", lastWatched.ToString("o"));
+      command.Parameters.AddWithValue("@Id", videoId);
+
+      await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task<int> GetNotWatchedVideosCountAsync(int days)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = @"
+        SELECT COUNT(*) FROM Videos 
+        WHERE COALESCE(LastWatched, DateAdded) < datetime('now', '-' || @Days || ' days', 'localtime')";
+      command.Parameters.AddWithValue("@Days", days);
+
+      var result = await command.ExecuteScalarAsync();
+      return Convert.ToInt32(result);
+    }
+
+    public async Task<List<VideoModel>> GetNotWatchedVideosSortedAsync(int days, string sortProperty, bool ascending, int offset, int limit)
+    {
+      var videos = new List<VideoModel>();
+      var order = ascending ? "ASC" : "DESC";
+
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+
+      var command = connection.CreateCommand();
+      command.CommandText = $@"
+        SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate, LastWatched
+        FROM Videos 
+        WHERE COALESCE(LastWatched, DateAdded) < datetime('now', '-' || @Days || ' days', 'localtime')
+        ORDER BY {sortProperty} {order}, COALESCE(LastWatched, DateAdded) ASC 
+        LIMIT @Limit OFFSET @Offset";
+
+      command.Parameters.AddWithValue("@Days", days);
+      command.Parameters.AddWithValue("@Limit", limit);
+      command.Parameters.AddWithValue("@Offset", offset);
+
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync())
+      {
+        videos.Add(new VideoModel
+        {
+          Id = reader.GetInt32("Id"),
+          Title = reader.GetString("Title"),
+          FilePath = reader.GetString("FilePath"),
+          ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
+          Duration = TimeSpan.Parse(reader.GetString("Duration")),
+          DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
+          IsFavorite = reader.GetInt32("IsFavorite") == 1,
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
+          FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
+          CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
+        });
+      }
+
+      return videos;
+    }
   }
 }
