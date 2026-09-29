@@ -18,5 +18,14 @@ namespace winui_local_movie
             dialog.XamlRoot = this.XamlRoot;
             _ = dialog.ShowAsync();
         }
+
+        private void MigrateArchiveFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new ArchiveFolderMigrationDialog
+            {
+                XamlRoot = XamlRoot
+            };
+            _ = dialog.ShowAsync();
+        }
     }
 }

@@ -17,6 +17,10 @@
                     Click="MergeVideos_Click" 
                     HorizontalAlignment="Left"
                     Width="150"/>
+            <Button Content="迁移归档视频文件夹"
+                    Click="MigrateArchiveFolder_Click"
+                    HorizontalAlignment="Left"
+                    Width="180"/>
         </StackPanel>
     </Grid>
 </Page>

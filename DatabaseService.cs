@@ -430,6 +430,44 @@ namespace winui_local_movie
       return await command.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// Updates all video and thumbnail paths beneath a folder after it has been moved.
+    /// </summary>
+    public async Task<int> UpdatePathsForMovedFolderAsync(string oldFolderPath, string newFolderPath)
+    {
+      var oldRoot = Path.TrimEndingDirectorySeparator(oldFolderPath);
+      var newRoot = Path.TrimEndingDirectorySeparator(newFolderPath);
+      var oldPrefix = oldRoot + Path.DirectorySeparatorChar;
+
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      using var transaction = connection.BeginTransaction();
+
+      var command = connection.CreateCommand();
+      command.Transaction = transaction;
+      command.CommandText = @"
+        UPDATE Videos
+        SET FilePath = CASE
+              WHEN FilePath = @OldRoot THEN @NewRoot
+              WHEN substr(FilePath, 1, length(@OldPrefix)) = @OldPrefix THEN @NewRoot || substr(FilePath, length(@OldRoot) + 1)
+              ELSE FilePath
+            END,
+            ThumbnailPath = CASE
+              WHEN ThumbnailPath = @OldRoot THEN @NewRoot
+              WHEN substr(ThumbnailPath, 1, length(@OldPrefix)) = @OldPrefix THEN @NewRoot || substr(ThumbnailPath, length(@OldRoot) + 1)
+              ELSE ThumbnailPath
+            END
+        WHERE FilePath = @OldRoot OR substr(FilePath, 1, length(@OldPrefix)) = @OldPrefix
+           OR ThumbnailPath = @OldRoot OR substr(ThumbnailPath, 1, length(@OldPrefix)) = @OldPrefix";
+      command.Parameters.AddWithValue("@OldRoot", oldRoot);
+      command.Parameters.AddWithValue("@NewRoot", newRoot);
+      command.Parameters.AddWithValue("@OldPrefix", oldPrefix);
+
+      var affectedRows = await command.ExecuteNonQueryAsync();
+      await transaction.CommitAsync();
+      return affectedRows;
+    }
+
     public async Task DeleteVideoAsync(int videoId)
     {
       using var connection = new SqliteConnection(_connectionString);

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="winui_local_movie.ArchiveFolderMigrationDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="迁移归档视频文件夹"
+    PrimaryButtonText="开始迁移"
+    CloseButtonText="取消"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick">
+
+    <StackPanel Spacing="12">
+        <TextBlock Text="添加要迁移的归档文件夹，并选择它们的新位置。文件夹名称会保持不变，视频和封面文件的数据库路径会一并更新。"
+                   TextWrapping="Wrap" />
+        <TextBlock Text="归档文件夹（可添加多个）" />
+        <ListView x:Name="SourceFoldersListView"
+                  Height="160"
+                  SelectionMode="Multiple" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="添加归档文件夹"
+                    Click="AddSourceFolder_Click" />
+            <Button Content="移除选中项"
+                    Click="RemoveSelectedFolders_Click" />
+        </StackPanel>
+        <TextBox x:Name="DestinationFolderTextBox"
+                 Header="新位置"
+                 IsReadOnly="True"
+                 PlaceholderText="请选择目标父文件夹" />
+        <Button Content="选择新位置"
+                Click="SelectDestinationFolder_Click"
+                HorizontalAlignment="Left" />
+        <ProgressBar x:Name="MigrationProgressBar"
+                     Visibility="Collapsed"
+                     IsIndeterminate="True" />
+        <TextBlock x:Name="StatusTextBlock"
+                   TextWrapping="Wrap"
+                   Visibility="Collapsed" />
+    </StackPanel>
+</ContentDialog>
