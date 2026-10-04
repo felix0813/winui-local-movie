@@ -267,6 +267,8 @@ namespace winui_local_movie
                 // 使用搜索功能
                 videos = await _databaseService.SearchVideosAsync(
                     currentSearchTerm,
+                    _currentSortProperty,
+                    _isAscending,
                     (_currentPage - 1) * PageSize,
                     PageSize);
 
@@ -780,6 +782,7 @@ namespace winui_local_movie
 
         private async Task ShowVideoDetailsDialog(VideoModel video)
         {
+            video.Tags = await _databaseService.GetVideoTagsAsync(video.Id);
             // 创建弹窗内容
             var stackPanel = new StackPanel();
             // 添加视频信息
@@ -793,12 +796,19 @@ namespace winui_local_movie
                 async (_, _) => await RenameVideoFileAsync(video, fileNameValueBlock, titleValueBlock, filePathValueBlock));
             filePathValueBlock = AddDetailRow(stackPanel, "文件路径:", video.FilePath);
             AddDetailRow(stackPanel, "时长:", video.FormatDuration(video.Duration));
-            AddDetailRow(stackPanel, "文件大小:", $"{video.FileSize} MB");
+            AddDetailRow(stackPanel, "文件大小:", video.FormatFileSize());
             AddDetailRow(stackPanel, "创建日期:", video.CreationDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A");
             AddDetailRow(stackPanel, "加入时间:", video.DateAdded.ToString("yyyy-MM-dd HH:mm:ss"));
             AddDetailRow(stackPanel, "收藏状态:", video.IsFavorite ? "是" : "否");
             AddDetailRow(stackPanel, "稍后观看:", video.IsWatchLater ? "是" : "否");
-            AddDetailRow(stackPanel, "上次观看:", video.LastWatched?.ToString("yyyy-MM-dd HH:mm:ss") ?? "从未观看");
+            AddDetailRow(stackPanel, "上次观看:", video.FormatLastWatched());
+            var tagsBox = new TextBox
+            {
+                Header = "标签（使用逗号分隔）",
+                Text = string.Join(", ", video.Tags),
+                PlaceholderText = "例如：电影, 收藏, 周末观看"
+            };
+            stackPanel.Children.Add(tagsBox);
 
             // 创建并配置弹窗
             var dialog = new ContentDialog
@@ -811,10 +821,18 @@ namespace winui_local_movie
                     MaxHeight = 500
                 },
                 CloseButtonText = "关闭",
+                PrimaryButtonText = "保存标签",
                 XamlRoot = this.Content.XamlRoot
             };
 
-            await dialog.ShowAsync();
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                var tags = tagsBox.Text.Split(new[] { ',', '，' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(tag => tag.Trim()).Where(tag => !string.IsNullOrWhiteSpace(tag)).ToList();
+                await _databaseService.UpdateVideoTagsAsync(video.Id, tags);
+                video.Tags = tags.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            }
         }
 
         private TextBlock AddDetailRow(StackPanel parent, string label, string value)

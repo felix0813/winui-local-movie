@@ -1,6 +1,8 @@
 // VideoModel.cs
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace winui_local_movie
@@ -19,6 +21,22 @@ namespace winui_local_movie
     public long FileSize { get; set; }
     public DateTime? CreationDate { get; set; }
     public DateTime? LastWatched { get; set; }
+    public List<string> Tags { get; set; } = new();
+
+    public string FormatFileSize()
+    {
+      return $"{FileSize:N0} MB";
+    }
+
+    public string FormatLastWatched()
+    {
+      return LastWatched?.ToString("yyyy-MM-dd HH:mm:ss") ?? "从未观看";
+    }
+
+    public string FormatTags()
+    {
+      return Tags.Count == 0 ? "无" : string.Join("、", Tags);
+    }
 
     public Microsoft.UI.Xaml.Media.ImageSource? GetThumbnailPath(string videoFilePath)
     {

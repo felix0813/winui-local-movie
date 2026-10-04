@@ -180,6 +180,18 @@
                             StretchDirection="UpOnly">
                             <StackPanel Width="220"
                             Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip>
+                                        <StackPanel Spacing="4" MaxWidth="420">
+                                            <TextBlock Text="文件大小" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{x:Bind FormatFileSize()}"/>
+                                            <TextBlock Text="上次观看" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                                            <TextBlock Text="{x:Bind FormatLastWatched()}"/>
+                                            <TextBlock Text="文件路径" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                                            <TextBlock Text="{x:Bind FilePath}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </ToolTip>
+                                </ToolTipService.ToolTip>
 
                             <!-- 上方缩略图区域 -->
                             <Border Background="LightGray"

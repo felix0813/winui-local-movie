@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace winui_local_movie
@@ -55,6 +56,22 @@ namespace winui_local_movie
         try { alterCmd.ExecuteNonQuery(); } catch { }
       }
 
+      var tagTablesCommand = connection.CreateCommand();
+      tagTablesCommand.CommandText = @"
+        CREATE TABLE IF NOT EXISTS Tags (
+          Id INTEGER PRIMARY KEY AUTOINCREMENT,
+          Name TEXT NOT NULL COLLATE NOCASE UNIQUE
+        );
+        CREATE TABLE IF NOT EXISTS VideoTags (
+          VideoId INTEGER NOT NULL,
+          TagId INTEGER NOT NULL,
+          PRIMARY KEY (VideoId, TagId),
+          FOREIGN KEY (VideoId) REFERENCES Videos(Id) ON DELETE CASCADE,
+          FOREIGN KEY (TagId) REFERENCES Tags(Id) ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS IX_VideoTags_TagId ON VideoTags(TagId);";
+      tagTablesCommand.ExecuteNonQuery();
+
       connection.Close();
     }
 
@@ -84,6 +101,66 @@ namespace winui_local_movie
 
       int ordinal = reader.GetOrdinal(column);
       return reader.IsDBNull(ordinal) ? null : DateTime.Parse(reader.GetString(ordinal));
+    }
+
+    public async Task<List<string>> GetVideoTagsAsync(int videoId)
+    {
+      var tags = new List<string>();
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      var command = connection.CreateCommand();
+      command.CommandText = @"
+        SELECT Tags.Name FROM Tags
+        INNER JOIN VideoTags ON VideoTags.TagId = Tags.Id
+        WHERE VideoTags.VideoId = @VideoId
+        ORDER BY Tags.Name COLLATE NOCASE";
+      command.Parameters.AddWithValue("@VideoId", videoId);
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync()) tags.Add(reader.GetString(0));
+      return tags;
+    }
+
+    public async Task UpdateVideoTagsAsync(int videoId, IEnumerable<string> tagNames)
+    {
+      var normalizedTags = tagNames
+        .Select(tag => tag.Trim())
+        .Where(tag => !string.IsNullOrWhiteSpace(tag))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToList();
+
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      using var transaction = connection.BeginTransaction();
+
+      var deleteCommand = connection.CreateCommand();
+      deleteCommand.Transaction = transaction;
+      deleteCommand.CommandText = "DELETE FROM VideoTags WHERE VideoId = @VideoId";
+      deleteCommand.Parameters.AddWithValue("@VideoId", videoId);
+      await deleteCommand.ExecuteNonQueryAsync();
+
+      foreach (var tagName in normalizedTags)
+      {
+        var insertTagCommand = connection.CreateCommand();
+        insertTagCommand.Transaction = transaction;
+        insertTagCommand.CommandText = "INSERT INTO Tags (Name) VALUES (@Name) ON CONFLICT(Name) DO NOTHING";
+        insertTagCommand.Parameters.AddWithValue("@Name", tagName);
+        await insertTagCommand.ExecuteNonQueryAsync();
+
+        var linkCommand = connection.CreateCommand();
+        linkCommand.Transaction = transaction;
+        linkCommand.CommandText = @"
+          INSERT OR IGNORE INTO VideoTags (VideoId, TagId)
+          SELECT @VideoId, Id FROM Tags WHERE Name = @Name COLLATE NOCASE";
+        linkCommand.Parameters.AddWithValue("@VideoId", videoId);
+        linkCommand.Parameters.AddWithValue("@Name", tagName);
+        await linkCommand.ExecuteNonQueryAsync();
+      }
+
+      var cleanupCommand = connection.CreateCommand();
+      cleanupCommand.Transaction = transaction;
+      cleanupCommand.CommandText = "DELETE FROM Tags WHERE NOT EXISTS (SELECT 1 FROM VideoTags WHERE VideoTags.TagId = Tags.Id)";
+      await cleanupCommand.ExecuteNonQueryAsync();
+      transaction.Commit();
     }
 
     // 在 DatabaseService.cs 中更新 AddVideoAsync 方法
@@ -695,7 +772,7 @@ namespace winui_local_movie
 
       return videos;
     }
-    public async Task<List<VideoModel>> SearchVideosAsync(string searchTerm, int offset = 0, int limit = 0)
+    public async Task<List<VideoModel>> SearchVideosAsync(string searchTerm, string sortProperty, bool ascending, int offset = 0, int limit = 0)
     {
       var videos = new List<VideoModel>();
       var limitClause = limit > 0 ? "LIMIT @Limit OFFSET @Offset" : "";
@@ -705,10 +782,14 @@ namespace winui_local_movie
 
       var command = connection.CreateCommand();
       command.CommandText = $@"
-        SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate
+        SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater, FileSize, CreationDate, LastWatched
         FROM Videos 
         WHERE Title LIKE @SearchTerm OR FilePath LIKE @SearchTerm
-        ORDER BY DateAdded DESC 
+          OR EXISTS (
+            SELECT 1 FROM VideoTags
+            INNER JOIN Tags ON Tags.Id = VideoTags.TagId
+            WHERE VideoTags.VideoId = Videos.Id AND Tags.Name LIKE @SearchTerm)
+        ORDER BY {sortProperty} {(ascending ? "ASC" : "DESC")}, DateAdded DESC
         {limitClause}";
 
       command.Parameters.AddWithValue("@SearchTerm", $"%{searchTerm}%");
@@ -748,7 +829,11 @@ namespace winui_local_movie
     command.CommandText = @"
         SELECT COUNT(*) 
         FROM Videos 
-        WHERE Title LIKE @SearchTerm OR FilePath LIKE @SearchTerm";
+        WHERE Title LIKE @SearchTerm OR FilePath LIKE @SearchTerm
+          OR EXISTS (
+            SELECT 1 FROM VideoTags
+            INNER JOIN Tags ON Tags.Id = VideoTags.TagId
+            WHERE VideoTags.VideoId = Videos.Id AND Tags.Name LIKE @SearchTerm)";
     
     command.Parameters.AddWithValue("@SearchTerm", $"%{searchTerm}%");
 
