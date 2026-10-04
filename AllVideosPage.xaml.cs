@@ -33,7 +33,8 @@ namespace winui_local_movie
             All,
             Favorites,
             WatchLater,
-            NotWatched
+            NotWatched,
+            Recommendations
         }
         private readonly DatabaseService _databaseService;
         private int _currentPage = 1;
@@ -207,6 +208,9 @@ namespace winui_local_movie
                     currentViewMode = ViewMode.NotWatched;
                     SaveNotWatchedThreshold(GetSelectedNotWatchedDays());
                     break;
+                case "Recommendations":
+                    currentViewMode = ViewMode.Recommendations;
+                    break;
             }
 
             // 更新按钮样式
@@ -226,6 +230,7 @@ namespace winui_local_movie
             FavoritesButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
             WatchLaterButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
             NotWatchedButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
+            RecommendationsButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
 
             // 天数选择器仅在"很久未看"模式下可见
             NotWatchedDaysComboBox.Visibility = activeTag == "NotWatched" ? Visibility.Visible : Visibility.Collapsed;
@@ -244,6 +249,9 @@ namespace winui_local_movie
                     break;
                 case "NotWatched":
                     NotWatchedButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
+                    break;
+                case "Recommendations":
+                    RecommendationsButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
                     break;
             }
         }
@@ -306,6 +314,11 @@ namespace winui_local_movie
                             (_currentPage - 1) * PageSize,
                             PageSize);
                         totalCount = await _databaseService.GetNotWatchedVideosCountAsync(notWatchedDays);
+                        break;
+
+                    case ViewMode.Recommendations:
+                        videos = await _databaseService.GetRecommendedVideosAsync(PageSize);
+                        totalCount = videos.Count;
                         break;
 
                     default: // ViewMode.All
@@ -783,6 +796,7 @@ namespace winui_local_movie
         private async Task ShowVideoDetailsDialog(VideoModel video)
         {
             video.Tags = await _databaseService.GetVideoTagsAsync(video.Id);
+            video.PlayCount = await _databaseService.GetVideoPlayCountAsync(video.Id);
             // 创建弹窗内容
             var stackPanel = new StackPanel();
             // 添加视频信息
@@ -802,6 +816,7 @@ namespace winui_local_movie
             AddDetailRow(stackPanel, "收藏状态:", video.IsFavorite ? "是" : "否");
             AddDetailRow(stackPanel, "稍后观看:", video.IsWatchLater ? "是" : "否");
             AddDetailRow(stackPanel, "上次观看:", video.FormatLastWatched());
+            AddDetailRow(stackPanel, "打开次数:", video.PlayCount.ToString());
             var tagsBox = new TextBox
             {
                 Header = "标签（使用逗号分隔）",
@@ -1173,12 +1188,18 @@ namespace winui_local_movie
             {
                 // 使用系统默认程序打开视频
                 var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(video.FilePath);
-                await Windows.System.Launcher.LaunchFileAsync(file);
+                var launched = await Windows.System.Launcher.LaunchFileAsync(file);
+                if (!launched)
+                {
+                    await ShowErrorDialog("无法启动用于播放此视频的应用。");
+                    return;
+                }
 
                 // 记录上次观看时间
                 var now = DateTime.Now;
                 video.LastWatched = now;
-                await _databaseService.UpdateLastWatchedAsync(video.Id, now);
+                video.PlayCount++;
+                await _databaseService.RecordVideoPlayedAsync(video.Id, now);
             }
             catch (Exception ex)
             {

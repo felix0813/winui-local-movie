@@ -21,6 +21,7 @@ namespace winui_local_movie
     public long FileSize { get; set; }
     public DateTime? CreationDate { get; set; }
     public DateTime? LastWatched { get; set; }
+    public int PlayCount { get; set; }
     public List<string> Tags { get; set; } = new();
 
     public string FormatFileSize()

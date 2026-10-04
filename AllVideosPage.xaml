@@ -56,6 +56,11 @@
                   Click="FilterButton_Click"
                   Tag="NotWatched"
                   Margin="5,0"/>
+                    <Button x:Name="RecommendationsButton"
+                  Content="推荐"
+                  Click="FilterButton_Click"
+                  Tag="Recommendations"
+                  Margin="5,0"/>
                     <ComboBox x:Name="NotWatchedDaysComboBox"
                   Header="未看天数"
                   SelectionChanged="NotWatchedDaysComboBox_SelectionChanged"

@@ -25,6 +25,14 @@ namespace winui_local_movie
     {
       ContentFrame.Navigate(typeof(AllVideosPage));
     }
+    private void ShowPendingVideos_Click(object sender, RoutedEventArgs e)
+    {
+      ContentFrame.Navigate(typeof(PendingVideosPage));
+    }
+    private void ShowGallery_Click(object sender, RoutedEventArgs e)
+    {
+      ContentFrame.Navigate(typeof(GalleryPage));
+    }
     private void Toolbox_Click(object sender, RoutedEventArgs e)
     {
       ContentFrame.Navigate(typeof(ToolboxPage));

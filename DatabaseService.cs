@@ -56,6 +56,16 @@ namespace winui_local_movie
         try { alterCmd.ExecuteNonQuery(); } catch { }
       }
 
+      var playCountColumnCommand = connection.CreateCommand();
+      playCountColumnCommand.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Videos') WHERE name='PlayCount'";
+      var playCountColumnExists = Convert.ToInt32(playCountColumnCommand.ExecuteScalar()) > 0;
+      if (!playCountColumnExists)
+      {
+        var alterPlayCountCommand = connection.CreateCommand();
+        alterPlayCountCommand.CommandText = "ALTER TABLE Videos ADD COLUMN PlayCount INTEGER NOT NULL DEFAULT 0";
+        try { alterPlayCountCommand.ExecuteNonQuery(); } catch { }
+      }
+
       var tagTablesCommand = connection.CreateCommand();
       tagTablesCommand.CommandText = @"
         CREATE TABLE IF NOT EXISTS Tags (
@@ -71,6 +81,29 @@ namespace winui_local_movie
         );
         CREATE INDEX IF NOT EXISTS IX_VideoTags_TagId ON VideoTags(TagId);";
       tagTablesCommand.ExecuteNonQuery();
+
+      var galleryTablesCommand = connection.CreateCommand();
+      galleryTablesCommand.CommandText = @"
+        CREATE TABLE IF NOT EXISTS GalleryAlbums (
+          Id INTEGER PRIMARY KEY AUTOINCREMENT,
+          Title TEXT NOT NULL,
+          FolderPath TEXT NOT NULL UNIQUE,
+          CoverPath TEXT,
+          DateAdded TEXT NOT NULL,
+          IsFavorite INTEGER NOT NULL DEFAULT 0,
+          LastViewedAt TEXT,
+          LastViewedIndex INTEGER NOT NULL DEFAULT 0
+        );
+        CREATE TABLE IF NOT EXISTS GalleryImages (
+          Id INTEGER PRIMARY KEY AUTOINCREMENT,
+          AlbumId INTEGER NOT NULL,
+          FilePath TEXT NOT NULL,
+          SortOrder INTEGER NOT NULL,
+          UNIQUE (AlbumId, FilePath),
+          FOREIGN KEY (AlbumId) REFERENCES GalleryAlbums(Id) ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS IX_GalleryImages_AlbumId_SortOrder ON GalleryImages(AlbumId, SortOrder);";
+      galleryTablesCommand.ExecuteNonQuery();
 
       connection.Close();
     }
@@ -118,6 +151,210 @@ namespace winui_local_movie
       using var reader = await command.ExecuteReaderAsync();
       while (await reader.ReadAsync()) tags.Add(reader.GetString(0));
       return tags;
+    }
+
+    public async Task<int> UpsertGalleryAlbumAsync(string folderPath, string title, IReadOnlyList<string> imagePaths)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      using var transaction = connection.BeginTransaction();
+      var coverPath = imagePaths.FirstOrDefault() ?? string.Empty;
+      using var albumCommand = connection.CreateCommand();
+      albumCommand.Transaction = transaction;
+      albumCommand.CommandText = @"
+        INSERT INTO GalleryAlbums (Title, FolderPath, CoverPath, DateAdded)
+        VALUES (@Title, @FolderPath, @CoverPath, @DateAdded)
+        ON CONFLICT(FolderPath) DO UPDATE SET Title = excluded.Title, CoverPath = excluded.CoverPath
+        RETURNING Id";
+      albumCommand.Parameters.AddWithValue("@Title", title);
+      albumCommand.Parameters.AddWithValue("@FolderPath", folderPath);
+      albumCommand.Parameters.AddWithValue("@CoverPath", coverPath);
+      albumCommand.Parameters.AddWithValue("@DateAdded", DateTime.Now.ToString("o"));
+      var albumId = Convert.ToInt32(await albumCommand.ExecuteScalarAsync());
+
+      using var deleteImages = connection.CreateCommand();
+      deleteImages.Transaction = transaction;
+      deleteImages.CommandText = "DELETE FROM GalleryImages WHERE AlbumId = @AlbumId";
+      deleteImages.Parameters.AddWithValue("@AlbumId", albumId);
+      await deleteImages.ExecuteNonQueryAsync();
+
+      // 为整个批量导入复用同一个原生 prepared statement，避免每张图片都残留一个
+      // 未释放的 sqlite3_stmt，图片较多时可能耗尽或破坏原生 SQLite 状态。
+      using var imageCommand = connection.CreateCommand();
+      imageCommand.Transaction = transaction;
+      imageCommand.CommandText = "INSERT INTO GalleryImages (AlbumId, FilePath, SortOrder) VALUES (@AlbumId, @FilePath, @SortOrder)";
+      var imageAlbumIdParameter = imageCommand.Parameters.Add("@AlbumId", SqliteType.Integer);
+      var imageFilePathParameter = imageCommand.Parameters.Add("@FilePath", SqliteType.Text);
+      var imageSortOrderParameter = imageCommand.Parameters.Add("@SortOrder", SqliteType.Integer);
+      imageAlbumIdParameter.Value = albumId;
+      imageCommand.Prepare();
+
+      for (var index = 0; index < imagePaths.Count; index++)
+      {
+        imageFilePathParameter.Value = imagePaths[index];
+        imageSortOrderParameter.Value = index;
+        await imageCommand.ExecuteNonQueryAsync();
+      }
+      await transaction.CommitAsync();
+      return albumId;
+    }
+
+    public async Task<List<GalleryAlbum>> GetGalleryAlbumsAsync()
+    {
+      var albums = new List<GalleryAlbum>();
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      var command = connection.CreateCommand();
+      command.CommandText = @"
+        SELECT a.Id, a.Title, a.FolderPath, a.CoverPath, a.DateAdded, a.IsFavorite, a.LastViewedAt, a.LastViewedIndex,
+               COUNT(i.Id) AS ImageCount
+        FROM GalleryAlbums a LEFT JOIN GalleryImages i ON i.AlbumId = a.Id
+        GROUP BY a.Id ORDER BY a.IsFavorite DESC, a.DateAdded DESC";
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync())
+      {
+        albums.Add(new GalleryAlbum
+        {
+          Id = reader.GetInt32("Id"), Title = reader.GetString("Title"), FolderPath = reader.GetString("FolderPath"),
+          CoverPath = reader.IsDBNull("CoverPath") ? null : reader.GetString("CoverPath"),
+          DateAdded = DateTime.Parse(reader.GetString("DateAdded")), IsFavorite = reader.GetInt32("IsFavorite") == 1,
+          LastViewedAt = TryGetDateTime(reader, "LastViewedAt"), LastViewedIndex = reader.GetInt32("LastViewedIndex"),
+          ImageCount = reader.GetInt32("ImageCount")
+        });
+      }
+      return albums;
+    }
+
+    public async Task<List<GalleryImage>> GetGalleryImagesAsync(int albumId)
+    {
+      var images = new List<GalleryImage>();
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      var command = connection.CreateCommand();
+      command.CommandText = "SELECT Id, AlbumId, FilePath, SortOrder FROM GalleryImages WHERE AlbumId = @AlbumId ORDER BY SortOrder";
+      command.Parameters.AddWithValue("@AlbumId", albumId);
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync()) images.Add(new GalleryImage { Id = reader.GetInt32("Id"), AlbumId = reader.GetInt32("AlbumId"), FilePath = reader.GetString("FilePath"), SortOrder = reader.GetInt32("SortOrder") });
+      return images;
+    }
+
+    public async Task UpdateGalleryProgressAsync(int albumId, int imageIndex)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      var command = connection.CreateCommand();
+      command.CommandText = "UPDATE GalleryAlbums SET LastViewedAt = @LastViewedAt, LastViewedIndex = @LastViewedIndex WHERE Id = @Id";
+      command.Parameters.AddWithValue("@LastViewedAt", DateTime.Now.ToString("o")); command.Parameters.AddWithValue("@LastViewedIndex", imageIndex); command.Parameters.AddWithValue("@Id", albumId);
+      await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task UpdateGalleryFavoriteAsync(int albumId, bool isFavorite)
+    {
+      using var connection = new SqliteConnection(_connectionString); await connection.OpenAsync();
+      var command = connection.CreateCommand(); command.CommandText = "UPDATE GalleryAlbums SET IsFavorite = @IsFavorite WHERE Id = @Id";
+      command.Parameters.AddWithValue("@IsFavorite", isFavorite ? 1 : 0); command.Parameters.AddWithValue("@Id", albumId); await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task DeleteGalleryAlbumAsync(int albumId)
+    {
+      using var connection = new SqliteConnection(_connectionString); await connection.OpenAsync();
+      using var transaction = connection.BeginTransaction();
+      var deleteImages = connection.CreateCommand(); deleteImages.Transaction = transaction; deleteImages.CommandText = "DELETE FROM GalleryImages WHERE AlbumId = @Id"; deleteImages.Parameters.AddWithValue("@Id", albumId); await deleteImages.ExecuteNonQueryAsync();
+      var deleteAlbum = connection.CreateCommand(); deleteAlbum.Transaction = transaction; deleteAlbum.CommandText = "DELETE FROM GalleryAlbums WHERE Id = @Id"; deleteAlbum.Parameters.AddWithValue("@Id", albumId); await deleteAlbum.ExecuteNonQueryAsync();
+      transaction.Commit();
+    }
+
+    public async Task<int> GetVideoPlayCountAsync(int videoId)
+    {
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      var command = connection.CreateCommand();
+      command.CommandText = "SELECT PlayCount FROM Videos WHERE Id = @VideoId";
+      command.Parameters.AddWithValue("@VideoId", videoId);
+      var result = await command.ExecuteScalarAsync();
+      return result is null || result == DBNull.Value ? 0 : Convert.ToInt32(result);
+    }
+
+    public async Task<List<VideoModel>> GetRecommendedVideosAsync(int limit = 100)
+    {
+      var videos = new List<VideoModel>();
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      var command = connection.CreateCommand();
+      command.CommandText = @"
+        SELECT v.Id, v.Title, v.FilePath, v.ThumbnailPath, v.Duration, v.DateAdded,
+               v.IsFavorite, v.IsWatchLater, v.FileSize, v.CreationDate, v.LastWatched, v.PlayCount,
+               (v.IsFavorite * 1000) + (v.PlayCount * 20) +
+               CASE WHEN v.LastWatched IS NULL THEN 0
+                    ELSE MAX(0, 180 - (julianday('now', 'localtime') - julianday(v.LastWatched))) END +
+               (SELECT COUNT(*) * 50
+                  FROM VideoTags vt
+                  WHERE vt.VideoId = v.Id
+                    AND EXISTS (
+                      SELECT 1 FROM VideoTags related
+                      INNER JOIN Videos relatedVideo ON relatedVideo.Id = related.VideoId
+                      WHERE related.TagId = vt.TagId AND related.VideoId <> v.Id
+                        AND (relatedVideo.IsFavorite = 1
+                             OR julianday(relatedVideo.LastWatched) >= julianday('now', '-90 days', 'localtime'))
+                    )) AS RecommendationScore
+        FROM Videos v
+        ORDER BY RecommendationScore DESC, v.DateAdded DESC
+        LIMIT @Limit";
+      command.Parameters.AddWithValue("@Limit", limit);
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync())
+      {
+        videos.Add(new VideoModel
+        {
+          Id = reader.GetInt32("Id"),
+          Title = reader.GetString("Title"),
+          FilePath = reader.GetString("FilePath"),
+          ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
+          Duration = TimeSpan.Parse(reader.GetString("Duration")),
+          DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
+          IsFavorite = reader.GetInt32("IsFavorite") == 1,
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
+          FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
+          CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
+          PlayCount = reader.IsDBNull("PlayCount") ? 0 : reader.GetInt32("PlayCount")
+        });
+      }
+      return videos;
+    }
+
+    public async Task<List<VideoModel>> GetUnwatchedVideosAsync()
+    {
+      var videos = new List<VideoModel>();
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      var command = connection.CreateCommand();
+      command.CommandText = @"
+        SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater,
+               FileSize, CreationDate, LastWatched, PlayCount
+        FROM Videos
+        WHERE LastWatched IS NULL
+        ORDER BY DateAdded DESC";
+      using var reader = await command.ExecuteReaderAsync();
+      while (await reader.ReadAsync())
+      {
+        videos.Add(new VideoModel
+        {
+          Id = reader.GetInt32("Id"),
+          Title = reader.GetString("Title"),
+          FilePath = reader.GetString("FilePath"),
+          ThumbnailPath = reader.IsDBNull("ThumbnailPath") ? null : reader.GetString("ThumbnailPath"),
+          Duration = TimeSpan.Parse(reader.GetString("Duration")),
+          DateAdded = DateTime.Parse(reader.GetString("DateAdded")),
+          IsFavorite = reader.GetInt32("IsFavorite") == 1,
+          IsWatchLater = reader.GetInt32("IsWatchLater") == 1,
+          FileSize = reader.IsDBNull("FileSize") ? 0 : reader.GetInt64("FileSize"),
+          CreationDate = reader.IsDBNull("CreationDate") ? null : DateTime.Parse(reader.GetString("CreationDate")),
+          LastWatched = TryGetDateTime(reader, "LastWatched"),
+          PlayCount = reader.IsDBNull("PlayCount") ? 0 : reader.GetInt32("PlayCount")
+        });
+      }
+      return videos;
     }
 
     public async Task UpdateVideoTagsAsync(int videoId, IEnumerable<string> tagNames)
@@ -841,13 +1078,13 @@ namespace winui_local_movie
     return Convert.ToInt32(result);
 }
 
-    public async Task UpdateLastWatchedAsync(int videoId, DateTime lastWatched)
+    public async Task RecordVideoPlayedAsync(int videoId, DateTime lastWatched)
     {
       using var connection = new SqliteConnection(_connectionString);
       await connection.OpenAsync();
 
       var command = connection.CreateCommand();
-      command.CommandText = "UPDATE Videos SET LastWatched = @LastWatched WHERE Id = @Id";
+      command.CommandText = "UPDATE Videos SET LastWatched = @LastWatched, PlayCount = PlayCount + 1 WHERE Id = @Id";
       command.Parameters.AddWithValue("@LastWatched", lastWatched.ToString("o"));
       command.Parameters.AddWithValue("@Id", videoId);
 

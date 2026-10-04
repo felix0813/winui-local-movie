@@ -22,6 +22,10 @@
                   Spacing="8">
         <Button Content="所有视频"
                 Click="ShowAllVideos_Click"/>
+        <Button Content="待观看"
+                Click="ShowPendingVideos_Click"/>
+        <Button Content="图集/漫画"
+                Click="ShowGallery_Click"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal"
                   HorizontalAlignment="Right"
