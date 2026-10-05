@@ -23,11 +23,15 @@ namespace winui_local_movie
     private int _currentImageIndex;
     private bool _suppressThumbnailSelection;
     private bool _isAutoPlaying;
+    private AlbumSortField _albumSortField = AlbumSortField.DateAdded;
+    private bool _albumSortAscending;
 
     public GalleryPage()
     {
       InitializeComponent();
       _databaseService = ((App)Application.Current).DatabaseService;
+      AlbumSortComboBox.SelectedIndex = 0;
+      UpdateAlbumSortDirectionButton();
       _autoPlayTimer.Interval = TimeSpan.FromSeconds(5);
       _autoPlayTimer.Tick += (_, _) => ShowImage(_currentImageIndex + 1, true);
       Loaded += async (_, _) => await LoadAlbumsAsync();
@@ -36,8 +40,80 @@ namespace winui_local_movie
     private async Task LoadAlbumsAsync()
     {
       var albums = await _databaseService.GetGalleryAlbumsAsync();
-      AlbumsGridView.ItemsSource = albums;
+      AlbumsGridView.ItemsSource = SortAlbums(albums).ToList();
       LibrarySummaryText.Text = albums.Count == 0 ? "导入一个包含图片的文件夹以开始" : $"共 {albums.Count} 个图集或漫画";
+    }
+
+    private IEnumerable<GalleryAlbum> SortAlbums(IEnumerable<GalleryAlbum> albums)
+    {
+      IOrderedEnumerable<GalleryAlbum> ordered;
+      switch (_albumSortField)
+      {
+        case AlbumSortField.LastViewedAt:
+          ordered = albums.OrderByDescending(album => album.LastViewedAt.HasValue);
+          ordered = _albumSortAscending
+            ? ordered.ThenBy(album => album.LastViewedAt)
+            : ordered.ThenByDescending(album => album.LastViewedAt);
+          break;
+        case AlbumSortField.Progress:
+          ordered = OrderByDirection(albums, GetAlbumProgress);
+          break;
+        case AlbumSortField.ImageCount:
+          ordered = OrderByDirection(albums, album => album.ImageCount);
+          break;
+        case AlbumSortField.Title:
+          ordered = OrderByDirection(albums, album => album.Title, FileNameComparer);
+          break;
+        case AlbumSortField.Favorite:
+          ordered = OrderByDirection(albums, album => album.IsFavorite);
+          break;
+        case AlbumSortField.FolderName:
+          ordered = OrderByDirection(albums, album => Path.GetFileName(album.FolderPath), FileNameComparer);
+          break;
+        default:
+          ordered = OrderByDirection(albums, album => album.DateAdded);
+          break;
+      }
+      return ordered.ThenBy(album => album.Title, FileNameComparer);
+    }
+
+    private IOrderedEnumerable<GalleryAlbum> OrderByDirection<TKey>(
+      IEnumerable<GalleryAlbum> albums,
+      Func<GalleryAlbum, TKey> keySelector,
+      IComparer<TKey>? comparer = null)
+    {
+      return _albumSortAscending
+        ? albums.OrderBy(keySelector, comparer)
+        : albums.OrderByDescending(keySelector, comparer);
+    }
+
+    private static double GetAlbumProgress(GalleryAlbum album)
+    {
+      if (album.LastViewedAt is null || album.ImageCount <= 0) return 0;
+      return (double)Math.Min(album.LastViewedIndex + 1, album.ImageCount) / album.ImageCount;
+    }
+
+    private async void AlbumSortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      if (AlbumSortComboBox.SelectedItem is not ComboBoxItem item ||
+          !Enum.TryParse(item.Tag?.ToString(), out AlbumSortField sortField)) return;
+      _albumSortField = sortField;
+      _albumSortAscending = sortField is AlbumSortField.Title or AlbumSortField.FolderName;
+      UpdateAlbumSortDirectionButton();
+      if (IsLoaded) await LoadAlbumsAsync();
+    }
+
+    private async void AlbumSortDirectionButton_Click(object sender, RoutedEventArgs e)
+    {
+      _albumSortAscending = !_albumSortAscending;
+      UpdateAlbumSortDirectionButton();
+      await LoadAlbumsAsync();
+    }
+
+    private void UpdateAlbumSortDirectionButton()
+    {
+      AlbumSortDirectionButton.Content = _albumSortAscending ? "升序 ↑" : "降序 ↓";
+      ToolTipService.SetToolTip(AlbumSortDirectionButton, _albumSortAscending ? "切换为降序" : "切换为升序");
     }
 
     private static List<string> FindImages(string folderPath) => Directory.EnumerateFiles(folderPath, "*", SearchOption.TopDirectoryOnly)
@@ -248,6 +324,17 @@ namespace winui_local_movie
         var lengthComparison = left.Length.CompareTo(right.Length);
         return lengthComparison != 0 ? lengthComparison : StringComparer.Ordinal.Compare(left, right);
       }
+    }
+
+    private enum AlbumSortField
+    {
+      DateAdded,
+      LastViewedAt,
+      Progress,
+      ImageCount,
+      Title,
+      Favorite,
+      FolderName
     }
   }
 }

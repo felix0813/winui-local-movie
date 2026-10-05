@@ -11,6 +11,17 @@
         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
         <StackPanel Spacing="3"><TextBlock Text="图集 / 漫画" FontSize="24" FontWeight="SemiBold"/><TextBlock x:Name="LibrarySummaryText" Text="按文件夹管理图片" Foreground="Gray"/></StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <TextBlock Text="排序" VerticalAlignment="Center" Foreground="Gray"/>
+          <ComboBox x:Name="AlbumSortComboBox" Width="150" SelectionChanged="AlbumSortComboBox_SelectionChanged">
+            <ComboBoxItem Content="加入时间" Tag="DateAdded"/>
+            <ComboBoxItem Content="上次观看时间" Tag="LastViewedAt"/>
+            <ComboBoxItem Content="观看进度" Tag="Progress"/>
+            <ComboBoxItem Content="图片数量" Tag="ImageCount"/>
+            <ComboBoxItem Content="名称" Tag="Title"/>
+            <ComboBoxItem Content="收藏状态" Tag="Favorite"/>
+            <ComboBoxItem Content="文件夹名称" Tag="FolderName"/>
+          </ComboBox>
+          <Button x:Name="AlbumSortDirectionButton" Content="降序 ↓" Click="AlbumSortDirectionButton_Click"/>
           <Button Content="导入文件夹" Click="ImportFolder_Click"/>
           <Button Content="刷新图集" Click="RefreshAlbum_Click"/>
           <Button Content="移除记录" Click="RemoveAlbum_Click"/>
