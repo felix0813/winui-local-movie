@@ -33,6 +33,7 @@ namespace winui_local_movie
             All,
             Favorites,
             WatchLater,
+            Pending,
             NotWatched,
             Recommendations
         }
@@ -204,6 +205,9 @@ namespace winui_local_movie
                 case "WatchLater":
                     currentViewMode = ViewMode.WatchLater;
                     break;
+                case "Pending":
+                    currentViewMode = ViewMode.Pending;
+                    break;
                 case "NotWatched":
                     currentViewMode = ViewMode.NotWatched;
                     SaveNotWatchedThreshold(GetSelectedNotWatchedDays());
@@ -229,6 +233,7 @@ namespace winui_local_movie
             AllVideosButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
             FavoritesButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
             WatchLaterButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
+            PendingButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
             NotWatchedButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
             RecommendationsButton.Style = Application.Current.Resources["DefaultButtonStyle"] as Style;
 
@@ -246,6 +251,9 @@ namespace winui_local_movie
                     break;
                 case "WatchLater":
                     WatchLaterButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
+                    break;
+                case "Pending":
+                    PendingButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
                     break;
                 case "NotWatched":
                     NotWatchedButton.Style = Application.Current.Resources["AccentButtonStyle"] as Style;
@@ -303,6 +311,15 @@ namespace winui_local_movie
                             (_currentPage - 1) * PageSize,
                             PageSize);
                         totalCount = await _databaseService.GetWatchLaterVideosAsync().ContinueWith(t => t.Result.Count);
+                        break;
+
+                    case ViewMode.Pending:
+                        videos = await _databaseService.GetPendingVideosSortedAsync(
+                            _currentSortProperty,
+                            _isAscending,
+                            (_currentPage - 1) * PageSize,
+                            PageSize);
+                        totalCount = await _databaseService.GetPendingVideosCountAsync();
                         break;
 
                     case ViewMode.NotWatched:
@@ -1200,6 +1217,10 @@ namespace winui_local_movie
                 video.LastWatched = now;
                 video.PlayCount++;
                 await _databaseService.RecordVideoPlayedAsync(video.Id, now);
+                if (currentViewMode == ViewMode.Pending)
+                {
+                    await LoadVideosAsync();
+                }
             }
             catch (Exception ex)
             {

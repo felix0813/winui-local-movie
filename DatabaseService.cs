@@ -323,18 +323,31 @@ namespace winui_local_movie
       return videos;
     }
 
-    public async Task<List<VideoModel>> GetUnwatchedVideosAsync()
+    public async Task<int> GetPendingVideosCountAsync()
     {
-      var videos = new List<VideoModel>();
       using var connection = new SqliteConnection(_connectionString);
       await connection.OpenAsync();
       var command = connection.CreateCommand();
-      command.CommandText = @"
+      command.CommandText = "SELECT COUNT(*) FROM Videos WHERE LastWatched IS NULL";
+      return Convert.ToInt32(await command.ExecuteScalarAsync());
+    }
+
+    public async Task<List<VideoModel>> GetPendingVideosSortedAsync(string sortProperty, bool ascending, int offset, int limit)
+    {
+      var videos = new List<VideoModel>();
+      var order = ascending ? "ASC" : "DESC";
+      using var connection = new SqliteConnection(_connectionString);
+      await connection.OpenAsync();
+      var command = connection.CreateCommand();
+      command.CommandText = $@"
         SELECT Id, Title, FilePath, ThumbnailPath, Duration, DateAdded, IsFavorite, IsWatchLater,
                FileSize, CreationDate, LastWatched, PlayCount
         FROM Videos
         WHERE LastWatched IS NULL
-        ORDER BY DateAdded DESC";
+        ORDER BY {sortProperty} {order}, DateAdded DESC
+        LIMIT @Limit OFFSET @Offset";
+      command.Parameters.AddWithValue("@Limit", limit);
+      command.Parameters.AddWithValue("@Offset", offset);
       using var reader = await command.ExecuteReaderAsync();
       while (await reader.ReadAsync())
       {

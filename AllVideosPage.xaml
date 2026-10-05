@@ -51,6 +51,11 @@
                   Click="FilterButton_Click"
                   Tag="WatchLater"
                   Margin="5,0"/>
+                    <Button x:Name="PendingButton"
+                  Content="待观看"
+                  Click="FilterButton_Click"
+                  Tag="Pending"
+                  Margin="5,0"/>
                     <Button x:Name="NotWatchedButton"
                   Content="很久未看"
                   Click="FilterButton_Click"
